@@ -1,26 +1,31 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma/client.js';
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
-  constructor() {
-    const connectionString = process.env.DATABASE_URL;
-    if (!connectionString) {
-      throw new Error('DATABASE_URL must be set');
-    }
+export class PrismaService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PrismaService.name);
+  private readonly _client: PrismaClient;
+
+  constructor(private readonly config: ConfigService) {
+    const connectionString = this.config.getOrThrow<string>('DATABASE_URL');
     const adapter = new PrismaPg({ connectionString });
-    super({ adapter });
+    this._client = new PrismaClient({ adapter });
   }
 
-  async onModuleInit() {
-    await this.$connect();
+  /** Expose the underlying Prisma client to repositories. */
+  get client(): PrismaClient {
+    return this._client;
   }
 
-  async onModuleDestroy() {
-    await this.$disconnect();
+  async onModuleInit(): Promise<void> {
+    await this._client.$connect();
+    this.logger.log('Database connected');
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this._client.$disconnect();
+    this.logger.log('Database disconnected');
   }
 }

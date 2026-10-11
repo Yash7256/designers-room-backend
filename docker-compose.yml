@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: designers_room
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: changeme
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -15,17 +15,40 @@ services:
       timeout: 2s
       retries: 20
 
-  app:
+  migrate:
     build:
       context: .
       dockerfile: Dockerfile
+      target: migrate
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
       - .env.docker
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - .env.docker
     ports:
       - "3000:3000"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
 
 volumes:
   postgres_data:
