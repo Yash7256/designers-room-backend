@@ -10,6 +10,9 @@ export class RoadmapsRepository {
   }
 
   findById(id: string) {
-    return this.prisma.roadmap.findUnique({ where: { id } });
+    return this.prisma.roadmap.findUnique({
+      where: { id },
+      include: { topics: true },
+    });
   }
 }
