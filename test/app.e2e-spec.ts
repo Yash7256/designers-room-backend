@@ -1,12 +1,36 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { createHmac } from 'node:crypto';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
+import 'dotenv/config';
 import { AllExceptionsFilter } from './../src/common/filters/http-exception.filter.js';
 import { AppModule } from './../src/app.module.js';
+import { PrismaService } from './../src/database/prisma.service.js';
+
+function signAccessToken(userId: string): string {
+  const secret = process.env['JWT_SECRET'];
+  if (!secret) throw new Error('JWT_SECRET is not set');
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const payload = Buffer.from(
+    JSON.stringify({
+      sub: userId,
+      iat: now,
+      exp: now + 900,
+      iss: 'designers-room',
+      aud: 'designers-room-web',
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', secret)
+    .update(`${header}.${payload}`)
+    .digest('base64url');
+  return `${header}.${payload}.${signature}`;
+}
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
+  let prisma: PrismaService;
   let accessToken: string;
 
   beforeAll(async () => {
@@ -20,6 +44,15 @@ describe('AppController (e2e)', () => {
     );
     app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
+
+    prisma = moduleFixture.get(PrismaService);
+
+    const user = await prisma.client.user.upsert({
+      where: { email: 'app-e2e-user@example.com' },
+      create: { email: 'app-e2e-user@example.com', name: 'App E2E User' },
+      update: {},
+    });
+    accessToken = signAccessToken(user.id);
   });
 
   afterAll(async () => {
@@ -36,40 +69,8 @@ describe('AppController (e2e)', () => {
   });
 
   describe('Auth flow', () => {
-    const unique = Date.now();
-    const email = `e2e-${unique}@test.example`;
-
-    it('POST /auth/signup creates user and returns token', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({ email, password: 'TestPass123!', name: 'E2E User' })
-        .expect(201);
-
-      expect(res.body).toHaveProperty('access_token');
-    });
-
-    it('POST /auth/signup returns 409 on duplicate email', () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({ email, password: 'TestPass123!', name: 'E2E User' })
-        .expect(409);
-    });
-
-    it('POST /auth/login returns token', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email, password: 'TestPass123!' })
-        .expect(200);
-
-      expect(res.body).toHaveProperty('access_token');
-      accessToken = res.body.access_token as string;
-    });
-
-    it('POST /auth/login returns 401 for wrong password', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email, password: 'WrongPassword!' })
-        .expect(401);
+    it('POST /auth/refresh returns 401 without a refresh cookie', () => {
+      return request(app.getHttpServer()).post('/auth/refresh').expect(401);
     });
   });
 

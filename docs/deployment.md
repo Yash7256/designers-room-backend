@@ -29,6 +29,8 @@ environment used by the frontend:
 - `WEB_APP_URL` — the deployed frontend URL.
 - `CORS_ORIGINS` — the deployed frontend URL, without a trailing slash.
 - `NODE_ENV=production`
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` —
+  Cloudflare R2 credentials for the guidebook documents (see below).
 
 `TRUST_PROXY` needs no configuration on Vercel: the effective value is never
 below `1` (the Vercel router) whenever the `VERCEL` environment variable is
@@ -47,6 +49,24 @@ npx prisma migrate deploy --config prisma7.config.ts
 ```
 
 Do not run migrations from a request handler.
+
+### Cloudflare R2 object storage
+
+The guidebook keeps one Markdown document per topic in Cloudflare R2 while the
+topic title, slug, ordering, and summary live in PostgreSQL. Create the bucket
+in the Cloudflare dashboard, then create an R2 API token with **Object Read &
+Write** for that bucket. Add these variables to the Vercel project for
+**Production** and **Preview**:
+
+- `R2_ACCOUNT_ID` — the Cloudflare account id.
+- `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` — the R2 API token credentials.
+- `R2_BUCKET_NAME` — the bucket that stores the documents.
+
+The bucket stays private: the API reads and writes objects through the R2 S3
+API and serves the Markdown to signed-in users, so no public bucket URL or
+custom domain is needed. Without these variables the app still boots, but the
+guidebook upload and read endpoints answer `503 Object storage is not
+configured`.
 
 ### Cloudflare custom API domain
 
