@@ -12,6 +12,7 @@ import { UsersModule } from './users/users.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AdminModule } from './admin/admin.module.js';
+import { WaitlistModule } from './waitlist/waitlist.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -31,6 +32,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     RoadmapsModule,
     HealthModule,
     AdminModule,
+    WaitlistModule,
   ],
   providers: [
     {
