@@ -13,6 +13,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AdminModule } from './admin/admin.module.js';
 import { WaitlistModule } from './waitlist/waitlist.module.js';
+import { GuidebookModule } from './guidebook/guidebook.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
 
@@ -40,6 +41,7 @@ void configModule.catch(() => undefined);
     HealthModule,
     AdminModule,
     WaitlistModule,
+    GuidebookModule,
   ],
   controllers: [AppController],
   providers: [
