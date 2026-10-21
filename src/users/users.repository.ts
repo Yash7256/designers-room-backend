@@ -5,11 +5,8 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string;
+  role: string;
   createdAt: Date;
-}
-
-export interface UserWithPassword extends UserProfile {
-  password: string;
 }
 
 const profileSelect = {
@@ -17,6 +14,7 @@ const profileSelect = {
   email: true,
   name: true,
   createdAt: true,
+  role: true,
 } as const;
 
 @Injectable()
@@ -30,16 +28,8 @@ export class UsersRepository {
     });
   }
 
-  findByEmail(email: string): Promise<UserWithPassword | null> {
-    return this.prisma.client.user.findUnique({
-      where: { email },
-      select: { ...profileSelect, password: true },
-    });
-  }
-
   create(data: {
     email: string;
-    password: string;
     name: string;
   }): Promise<UserProfile> {
     return this.prisma.client.user.create({
@@ -55,4 +45,5 @@ export class UsersRepository {
       select: profileSelect,
     });
   }
+
 }

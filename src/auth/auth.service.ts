@@ -1,68 +1,77 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { UsersRepository } from '../users/users.repository.js';
-import { LoginDto } from './dto/login.dto.js';
-import { SignupDto } from './dto/signup.dto.js';
+import { PrismaService } from '../database/prisma.service.js';
+import { AuditService } from './audit.service.js';
+import type { GoogleIdentity } from './google.strategy.js';
+import { TokenService } from './token.service.js';
+import { TotpService } from './totp.service.js';
 
-// Precomputed dummy hash used to equalize timing when the user is not found.
-const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuvuHGJfv4WdNriPaLRxM7V8GGH8JjR5OZe';
+type RequestMeta = { userAgent?: string; ipAddress?: string };
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersRepository: UsersRepository,
     private readonly jwtService: JwtService,
-    private readonly config: ConfigService,
+    private readonly tokens: TokenService,
+    private readonly prisma: PrismaService,
+    private readonly totp: TotpService,
+    private readonly audit: AuditService,
   ) {}
 
-  async signup(dto: SignupDto) {
-    const hashed = await bcrypt.hash(dto.password, 10);
-    try {
-      const user = await this.usersRepository.create({
-        email: dto.email,
-        password: hashed,
-        name: dto.name,
-      });
-      return this.generateToken(user.id, user.email);
-    } catch (err: unknown) {
-      if (
-        typeof err === 'object' &&
-        err !== null &&
-        'code' in err &&
-        (err as { code: string }).code === 'P2002'
-      ) {
-        throw new ConflictException('Email is already registered');
+  async loginWithGoogle(identity: GoogleIdentity, meta?: RequestMeta) {
+    const existing = await this.prisma.client.user.findUnique({ where: { googleId: identity.googleId } });
+    const user = existing ?? await this.prisma.client.user.upsert({
+      where: { email: identity.email },
+      update: { googleId: identity.googleId },
+      create: { email: identity.email, googleId: identity.googleId, name: identity.name },
+    });
+    if (user.role === 'ADMIN') {
+      const credential = await this.prisma.client.totpCredential.findUnique({ where: { userId: user.id } });
+      if (credential?.verifiedAt) {
+        this.audit.log({ action: 'ADMIN_LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+        return { mfaPending: true as const, mfaToken: this.totp.generateMfaToken(user.id) };
       }
-      throw err;
+    }
+    this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+    return this.issueTokens(user.id, meta);
+  }
+
+  async refresh(raw: string | undefined, meta?: RequestMeta) {
+    if (!raw) throw new UnauthorizedException('Invalid refresh token');
+    try {
+      const rotated = await this.tokens.rotate(raw, meta);
+      this.audit.log({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      return { access_token: this.jwtService.sign({ sub: rotated.userId }), refresh_token: rotated.raw };
+    } catch (error) {
+      if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') this.audit.log({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      throw error;
     }
   }
 
-  async login(dto: LoginDto) {
-    const user = await this.usersRepository.findByEmail(dto.email);
+  async logout(raw?: string) { await this.tokens.revoke(raw); return { success: true }; }
+  auditLogout(userId?: string) { this.audit.log({ action: 'LOGOUT', userId }); }
+  async logoutAll(userId: string) { await this.tokens.revokeAll(userId); this.audit.log({ action: 'LOGOUT_ALL', userId }); return { success: true }; }
+  metadata(req: import('express').Request): RequestMeta { return this.tokens.metadata(req); }
 
-    // Always run bcrypt to equalise timing (prevent user-enumeration via timing).
-    const valid = await bcrypt.compare(
-      dto.password,
-      user?.password ?? DUMMY_HASH,
-    );
-
-    if (!user || !valid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    return this.generateToken(user.id, user.email);
+  async enrollTotp(userId: string) { const result = await this.totp.enroll(userId); this.audit.log({ action: 'TOTP_ENROLLED', userId }); return result; }
+  async verifyTotp(userId: string, code: string) {
+    try { const result = await this.totp.verify(userId, code); this.audit.log({ action: 'TOTP_VERIFIED', userId }); return result; }
+    catch (error) { this.audit.log({ action: 'TOTP_FAILED', userId }); throw error; }
+  }
+  async totpChallenge(token: string, code: string, meta?: RequestMeta) {
+    const userId = this.totp.validateMfaToken(token);
+    try { await this.totp.verify(userId, code); return this.issueTokens(userId, meta); }
+    catch (error) { this.audit.log({ action: 'TOTP_FAILED', userId }); throw error; }
+  }
+  async totpRecover(token: string, code: string, meta?: RequestMeta) {
+    const userId = this.totp.validateMfaToken(token);
+    await this.totp.useRecoveryCode(userId, code);
+    this.audit.log({ action: 'RECOVERY_CODE_USED', userId });
+    return this.issueTokens(userId, meta);
   }
 
-  private generateToken(userId: string, email: string) {
-    const expiresIn = this.config.get<string>('JWT_EXPIRES_IN', '15m') as `${number}${'s' | 'm' | 'h' | 'd'}`;
-    return {
-      access_token: this.jwtService.sign({ sub: userId, email }, { expiresIn }),
-    };
+  private async issueTokens(userId: string, meta?: RequestMeta) {
+    const { raw } = await this.tokens.issueRefreshToken(userId, undefined, undefined, meta);
+    return { access_token: this.jwtService.sign({ sub: userId }), refresh_token: raw };
   }
 }

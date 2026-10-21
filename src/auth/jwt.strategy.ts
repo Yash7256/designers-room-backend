@@ -6,7 +6,6 @@ import { UsersRepository } from '../users/users.repository.js';
 
 interface JwtPayload {
   sub: string;
-  email: string;
 }
 
 @Injectable()
@@ -19,6 +18,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
+      issuer: 'designers-room',
+      audience: 'designers-room-web',
+      algorithms: ['HS256'],
     });
   }
 
@@ -27,6 +29,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
-    return { userId: user.id, email: user.email };
+    return { userId: user.id, role: user.role };
   }
 }

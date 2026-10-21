@@ -64,5 +64,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # AI coding tooling (local, not part of the app)
 /.agents/
 /.claude/
+/.kiro/
 /.windsurf/
 /skills-lock.json

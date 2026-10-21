@@ -6,6 +6,7 @@ import {
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
 import { PrismaService } from '../database/prisma.service.js';
+import { Public } from '../auth/decorators/public.decorator.js';
 
 @ApiTags('health')
 @Controller('health')
@@ -17,13 +18,21 @@ export class HealthController {
   ) {}
 
   /** Liveness — always returns 200 if the process is up. */
+  @Get()
+  @Public()
+  status() {
+    return { status: 'ok' };
+  }
+
   @Get('live')
+  @Public()
   live() {
     return { status: 'ok' };
   }
 
   /** Readiness — checks database connectivity. */
   @Get('ready')
+  @Public()
   @HealthCheck()
   ready() {
     return this.health.check([

@@ -1,26 +1,93 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards, Body } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { LoginDto } from './dto/login.dto.js';
-import { SignupDto } from './dto/signup.dto.js';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service.js';
+import { Public } from './decorators/public.decorator.js';
+import { Roles } from './decorators/roles.decorator.js';
+import { refreshCookieName, refreshCookieOptions } from './token.service.js';
+import type { GoogleIdentity } from './google.strategy.js';
 
-// Strict limit: 5 attempts per minute on auth endpoints
+function readCookie(req: Request, name: string): string | undefined {
+  return req.headers.cookie?.split(';').map((part) => part.trim()).find((part) => part.startsWith(`${name}=`))?.slice(name.length + 1);
+}
+
 @Throttle({ default: { ttl: 60_000, limit: 5 } })
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup')
-  @HttpCode(HttpStatus.CREATED)
-  signup(@Body() dto: SignupDto) {
-    return this.authService.signup(dto);
+  @Get('google')
+  @Public()
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {}
+
+  @Get('google/callback')
+  @Public()
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: Request & { user: GoogleIdentity }, @Res() res: Response) {
+    const result = await this.authService.loginWithGoogle(req.user, this.authService.metadata(req));
+    if ('mfaPending' in result) return res.redirect(`${this.webAppUrl()}/auth/mfa?token=${encodeURIComponent(result.mfaToken)}`);
+    this.setRefresh(res, result.refresh_token);
+    return res.redirect(`${this.webAppUrl()}/auth/callback`);
   }
 
-  @Post('login')
+  @Post('refresh')
+  @Public()
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.refresh(readCookie(req, this.cookieName()), this.authService.metadata(req));
+    this.setRefresh(res, result.refresh_token);
+    return { access_token: result.access_token };
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Req() req: Request & { user?: { userId: string } }, @Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(readCookie(req, this.cookieName()));
+    this.authService.auditLogout(req.user?.userId);
+    this.clearRefresh(res);
+    return { success: true };
+  }
+
+  @Post('logout-all')
+  @HttpCode(HttpStatus.OK)
+  async logoutAll(@Req() req: Request & { user: { userId: string } }, @Res({ passthrough: true }) res: Response) {
+    await this.authService.logoutAll(req.user.userId);
+    this.clearRefresh(res);
+    return { success: true };
+  }
+
+  @Post('totp/enroll')
+  @Roles('ADMIN')
+  enrollTotp(@Req() req: Request & { user: { userId: string } }) { return this.authService.enrollTotp(req.user.userId); }
+
+  @Post('totp/verify')
+  @Roles('ADMIN')
+  verifyTotp(@Req() req: Request & { user: { userId: string } }, @Body('code') code: string) { return this.authService.verifyTotp(req.user.userId, code); }
+
+  @Post('totp/challenge')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async totpChallenge(@Body('mfaToken') token: string, @Body('code') code: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.totpChallenge(token, code, this.authService.metadata(req));
+    this.setRefresh(res, result.refresh_token);
+    return { access_token: result.access_token };
+  }
+
+  @Post('totp/recover')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async totpRecover(@Body('mfaToken') token: string, @Body('code') code: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.totpRecover(token, code, this.authService.metadata(req));
+    this.setRefresh(res, result.refresh_token);
+    return { access_token: result.access_token };
+  }
+
+  private cookieName() { return refreshCookieName(process.env.NODE_ENV === 'production'); }
+  private webAppUrl() { return (process.env.WEB_APP_URL ?? 'http://localhost:3000').replace(/\/$/, ''); }
+  private setRefresh(res: Response, token: string) { res.cookie(this.cookieName(), token, refreshCookieOptions(process.env.NODE_ENV === 'production')); }
+  private clearRefresh(res: Response) { res.clearCookie(this.cookieName(), { ...refreshCookieOptions(process.env.NODE_ENV === 'production'), maxAge: 0 }); }
 }

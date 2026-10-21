@@ -1,98 +1,25 @@
 import 'dotenv/config';
-import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client.js';
 
-if (process.env.NODE_ENV === 'production') {
-  console.error('Seed must not run in production. Exiting.');
-  process.exit(1);
-}
-
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error('DATABASE_URL must be set');
-}
+const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+if (!connectionString) throw new Error('DATABASE_URL must be set');
+if (!adminEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) throw new Error('ADMIN_EMAIL must be a valid email address');
+const databaseUrl = connectionString;
+const validatedAdminEmail = adminEmail;
 
-const seedPassword = process.env.SEED_USER_PASSWORD ?? 'password123';
-
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
 
 async function main() {
-  const owner = await prisma.user.upsert({
-    where: { email: 'seed@designersroom.dev' },
-    update: {},
-    create: {
-      email: 'seed@designersroom.dev',
-      password: await bcrypt.hash(seedPassword, 10),
-      name: 'Seed Owner',
-    },
-  });
-
-  const roadmap = await prisma.roadmap.upsert({
-    where: { id: 'seed-roadmap-id-00000000001' },
-    update: {},
-    create: {
-      id: 'seed-roadmap-id-00000000001',
-      title: 'Product Design Roadmap',
-      description:
-        'Our MVP roadmap covering the core skills every product designer needs.',
-      userId: owner.id,
-    },
-  });
-
-  const topics = [
-    {
-      id: 'seed-topic-id-000000000001',
-      title: 'Design Fundamentals',
-      description: 'Beginner - color, typography, layout, and visual hierarchy.',
-      position: 0,
-    },
-    {
-      id: 'seed-topic-id-000000000002',
-      title: 'User Research',
-      description: 'Beginner - interviews, surveys, and synthesizing insights.',
-      position: 1,
-    },
-    {
-      id: 'seed-topic-id-000000000003',
-      title: 'Interaction Design',
-      description: 'Intermediate - user flows, states, and prototyping.',
-      position: 2,
-    },
-    {
-      id: 'seed-topic-id-000000000004',
-      title: 'Design Systems',
-      description: 'Advanced - tokens, reusable components, and documentation.',
-      position: 3,
-    },
-    {
-      id: 'seed-topic-id-000000000005',
-      title: 'Portfolio & Case Studies',
-      description: 'Advanced - presenting process, decisions, and outcomes.',
-      position: 4,
-    },
-  ];
-
-  for (const topic of topics) {
-    await prisma.topic.upsert({
-      where: { id: topic.id },
-      update: {},
-      create: { ...topic, roadmapId: roadmap.id },
-    });
+  const existing = await prisma.user.findUnique({ where: { email: validatedAdminEmail } });
+  if (existing) {
+    await prisma.user.update({ where: { id: existing.id }, data: { role: 'ADMIN' } });
+    console.log(`Admin role confirmed for ${validatedAdminEmail}`);
+    return;
   }
-
-  console.log(
-    `Seeded roadmap "${roadmap.title}" (${roadmap.id}) with ${topics.length} topics.`,
-  );
+  await prisma.user.create({ data: { email: validatedAdminEmail, name: 'Admin', role: 'ADMIN' } });
+  console.log(`Admin account prepared for Google email ${validatedAdminEmail}`);
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (error) => {
-    console.error(error);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+main().finally(() => prisma.$disconnect());

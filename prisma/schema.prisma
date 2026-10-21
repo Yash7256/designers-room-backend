@@ -7,14 +7,25 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
+  id        String   @id @default(cuid())
+  email     String   @unique
+  googleId  String?  @unique
   name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  roadmaps  Roadmap[]
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens     RefreshToken[]
+  auditLogs         AuditLog[]
+  totpCredential    TotpCredential?
+  totpRecoveryCodes TotpRecoveryCode[]
+  roadmaps          Roadmap[]
 }
 
 model Roadmap {
@@ -23,11 +34,10 @@ model Roadmap {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  topics      Topic[]
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  topics      Topic[]
 
-  @@index([userId])
   @@index([createdAt, id])
 }
 
@@ -43,4 +53,60 @@ model Topic {
 
   @@unique([roadmapId, position])
   @@index([roadmapId, position])
+}
+
+model RefreshToken {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash       String    @unique
+  familyId        String
+  familyCreatedAt DateTime
+  absoluteExpiry  DateTime
+  replacedBy      String?
+  expiresAt       DateTime
+  usedAt          DateTime?
+  revokedAt       DateTime?
+  lastUsedAt      DateTime?
+  userAgent       String?
+  ipAddress       String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model TotpCredential {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  encryptedSecret String
+  verifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+}
+
+model TotpRecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }

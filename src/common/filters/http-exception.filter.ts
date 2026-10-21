@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 
 interface PrismaKnownError {
@@ -25,6 +26,8 @@ function isPrismaError(err: unknown): err is PrismaKnownError {
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(private readonly config?: ConfigService) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -47,10 +50,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return;
       }
       // Other Prisma errors — log but don't leak details
-      this.logger.error(`Prisma error ${exception.code}`, exception as never);
+      const isProduction = this.config?.get<string>('NODE_ENV') === 'production';
+      this.logger.error(`Prisma error ${exception.code}${exception.meta ? ` ${JSON.stringify(exception.meta)}` : ''}`);
       response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Internal server error',
+        message: isProduction ? 'Internal server error' : `Database error (${exception.code})`,
+        ...(!isProduction ? { code: exception.code, meta: exception.meta } : {}),
       });
       return;
     }
@@ -58,6 +63,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // ── NestJS HTTP exceptions ───────────────────────────────────────────────
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
+      if (status >= 500 && this.config?.get<string>('NODE_ENV') === 'production') {
+        this.logger.error('Server error', exception as never);
+        response.status(status).json({
+          statusCode: status,
+          message: 'Internal server error',
+        });
+        return;
+      }
       const exceptionResponse = exception.getResponse();
       const body =
         typeof exceptionResponse === 'string'
@@ -69,9 +82,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // ── Unknown errors ───────────────────────────────────────────────────────
     this.logger.error('Unhandled exception', exception as never);
+    const isProduction = this.config?.get<string>('NODE_ENV') === 'production';
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Internal server error',
+      message: isProduction ? 'Internal server error' : exception instanceof Error ? exception.message : 'Internal server error',
+      ...(!isProduction && exception instanceof Error ? { stack: exception.stack } : {}),
     });
   }
 }
