@@ -14,6 +14,7 @@ import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AdminModule } from './admin/admin.module.js';
 import { WaitlistModule } from './waitlist/waitlist.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AppController } from './app.controller.js';
 
 const configModule = ConfigModule.forRoot({
   isGlobal: true,
@@ -40,6 +41,7 @@ void configModule.catch(() => undefined);
     AdminModule,
     WaitlistModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
