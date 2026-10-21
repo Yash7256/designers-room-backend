@@ -1,19 +1,18 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Length, Matches, Min } from 'class-validator';
+import { IsInt, IsObject, IsOptional, IsString, Length, Matches, Min } from 'class-validator';
 
-export class UpdateGuidebookTopicDto {
-  @ApiPropertyOptional({ maxLength: 200 })
-  @IsOptional()
+export class CreateRoadmapDto {
+  @ApiProperty({ maxLength: 200 })
   @IsString()
   @Length(1, 200)
-  title?: string;
+  title!: string;
 
   @ApiPropertyOptional({ maxLength: 2000 })
   @IsOptional()
   @IsString()
   @Length(1, 2000)
-  summary?: string;
+  description?: string;
 
   @ApiPropertyOptional({ pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' })
   @IsOptional()
@@ -27,4 +26,9 @@ export class UpdateGuidebookTopicDto {
   @IsInt()
   @Min(0)
   position?: number;
+
+  @ApiPropertyOptional({ type: Object })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, unknown>;
 }

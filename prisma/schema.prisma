@@ -26,19 +26,56 @@ model User {
   totpCredential    TotpCredential?
   totpRecoveryCodes TotpRecoveryCode[]
   roadmaps          Roadmap[]
+  topicProgress     TopicProgress[]
 }
 
 model Roadmap {
   id          String   @id @default(cuid())
   title       String
   description String?
+  slug        String   @unique
+  position    Int      @default(0)
+  metadata    Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   topics      Topic[]
+  stages      Stage[]
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt, id])
+  @@index([position])
+}
+
+model Stage {
+  id                String   @id @default(cuid())
+  position          Int
+  title             String
+  subtitle          String?
+  byTheEnd          String?
+  weekLabel         String?
+  prerequisiteStage Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  roadmapId         String
+  roadmap           Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  checkpoints       Checkpoint[]
+
+  @@unique([roadmapId, position])
+  @@index([roadmapId, position])
+}
+
+model Checkpoint {
+  id           String   @id @default(cuid())
+  position     Int      @default(0)
+  task         String
+  timeEstimate String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  stageId      String
+  stage        Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@index([stageId, position])
 }
 
 model Topic {
@@ -49,26 +86,29 @@ model Topic {
   stage            Int?
   difficulty       String?
   estimatedMinutes Int?
+  objectKey        String?  @unique
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   roadmapId        String
   roadmap          Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  progress         TopicProgress[]
 
   @@unique([roadmapId, position])
   @@index([roadmapId, position])
 }
 
-model GuidebookTopic {
+model TopicProgress {
   id        String   @id @default(cuid())
-  title     String
-  slug      String   @unique
-  position  Int      @default(0)
-  summary   String?
-  objectKey String   @unique
+  status    String   @default("not-started")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
-  @@index([position])
+  @@unique([userId, topicId])
+  @@index([userId])
 }
 
 model RefreshToken {

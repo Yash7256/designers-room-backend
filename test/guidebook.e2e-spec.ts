@@ -7,7 +7,7 @@ import 'dotenv/config';
 import { AllExceptionsFilter } from './../src/common/filters/http-exception.filter.js';
 import { AppModule } from './../src/app.module.js';
 import { PrismaService } from './../src/database/prisma.service.js';
-import { R2StorageService } from './../src/guidebook/r2-storage.service.js';
+import { R2StorageService } from './../src/storage/r2-storage.service.js';
 
 function signAccessToken(userId: string): string {
   const secret = process.env['JWT_SECRET'];
@@ -59,6 +59,8 @@ describe('Guidebook (e2e)', () => {
   let storage: InMemoryStorage;
   let adminToken: string;
   let userToken: string;
+  let roadmapId: string;
+  let topicId: string;
 
   const markdown = '# Chapter one\n\nWelcome to the guidebook.\n';
 
@@ -104,95 +106,113 @@ describe('Guidebook (e2e)', () => {
   });
 
   afterAll(async () => {
-    await prisma.client.guidebookTopic.deleteMany({
-      where: { title: { startsWith: 'E2E topic' } },
+    if (roadmapId) {
+      await prisma.client.roadmap.deleteMany({ where: { id: roadmapId } });
+    }
+    await prisma.client.roadmap.deleteMany({
+      where: { title: { startsWith: 'E2E guidebook' } },
     });
     await app.close();
   });
 
-  describe('POST /admin/guidebook/topics', () => {
+  describe('admin content management', () => {
     it('returns 401 without a token', () => {
       return request(app.getHttpServer())
-        .post('/admin/guidebook/topics')
-        .field('title', 'E2E topic')
-        .attach('file', Buffer.from(markdown), 'topic.md')
+        .post('/admin/roadmaps')
+        .send({ title: 'E2E guidebook' })
         .expect(401);
     });
 
     it('returns 403 for a non-admin token', () => {
       return request(app.getHttpServer())
-        .post('/admin/guidebook/topics')
+        .post('/admin/roadmaps')
         .set('Authorization', `Bearer ${userToken}`)
-        .field('title', 'E2E topic')
-        .attach('file', Buffer.from(markdown), 'topic.md')
+        .send({ title: 'E2E guidebook' })
         .expect(403);
     });
 
+    it('creates a guidebook, a stage, a checkpoint and a topic', async () => {
+      const roadmap = await request(app.getHttpServer())
+        .post('/admin/roadmaps')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ title: 'E2E guidebook', description: 'Created by the e2e suite' })
+        .expect(201);
+      roadmapId = roadmap.body.id;
+      expect(roadmap.body.slug).toBe('e2e-guidebook');
+
+      const stage = await request(app.getHttpServer())
+        .post(`/admin/roadmaps/${roadmapId}/stages`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ title: 'E2E stage', byTheEnd: 'You know the basics', weekLabel: 'Week 1' })
+        .expect(201);
+      expect(stage.body.position).toBe(1);
+
+      const checkpoint = await request(app.getHttpServer())
+        .post(`/admin/stages/${stage.body.id}/checkpoints`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ task: 'E2E checkpoint', timeEstimate: '20 min' })
+        .expect(201);
+      expect(checkpoint.body.task).toBe('E2E checkpoint');
+
+      const topic = await request(app.getHttpServer())
+        .post(`/admin/roadmaps/${roadmapId}/topics`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ title: 'E2E topic', stage: 1, difficulty: 'beginner', estimatedMinutes: 30 })
+        .expect(201);
+      topicId = topic.body.id;
+      expect(topic.body.stage).toBe(1);
+    });
+
+    it('rejects a topic without a title', () => {
+      return request(app.getHttpServer())
+        .post(`/admin/roadmaps/${roadmapId}/topics`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ description: 'No title' })
+        .expect(400);
+    });
+
+    it('rejects unknown fields', () => {
+      return request(app.getHttpServer())
+        .post(`/admin/roadmaps/${roadmapId}/topics`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ title: 'E2E topic', unknownField: 'nope' })
+        .expect(400);
+    });
+  });
+
+  describe('topic documents', () => {
     it('rejects a file that is not markdown', () => {
       return request(app.getHttpServer())
-        .post('/admin/guidebook/topics')
+        .post(`/admin/roadmaps/${roadmapId}/topics/${topicId}/content`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .field('title', 'E2E topic')
         .attach('file', Buffer.from(markdown), 'topic.exe')
         .expect(400);
     });
 
     it('rejects a request without a file', () => {
       return request(app.getHttpServer())
-        .post('/admin/guidebook/topics')
+        .post(`/admin/roadmaps/${roadmapId}/topics/${topicId}/content`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .field('title', 'E2E topic')
         .expect(400);
     });
 
-    it('stores the topic and the markdown object', async () => {
+    it('stores the markdown object', async () => {
       const res = await request(app.getHttpServer())
-        .post('/admin/guidebook/topics')
+        .post(`/admin/roadmaps/${roadmapId}/topics/${topicId}/content`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .field('title', 'E2E topic')
-        .field('summary', 'A topic created by the e2e suite')
         .attach('file', Buffer.from(markdown), 'topic.md')
         .expect(201);
 
-      expect(res.body.title).toBe('E2E topic');
-      expect(res.body.slug).toBe('e2e-topic');
-      expect(res.body.objectKey).toBeUndefined();
-
-      const stored = await prisma.client.guidebookTopic.findUnique({
-        where: { id: res.body.id },
-      });
-      expect(stored).not.toBeNull();
+      expect(res.body.objectKey).toMatch(
+        new RegExp(`^roadmaps/${roadmapId}/topics/${topicId}/[0-9a-f-]{36}\\.md$`),
+      );
       expect(storage.objects.size).toBe(1);
       expect([...storage.objects.values()][0]?.body.toString('utf-8')).toBe(markdown);
     });
-  });
-
-  describe('GET /guidebook/topics', () => {
-    it('returns 401 without a token', () => {
-      return request(app.getHttpServer()).get('/guidebook/topics').expect(401);
-    });
-
-    it('lists the topics for a signed-in user', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/guidebook/topics')
-        .set('Authorization', `Bearer ${userToken}`)
-        .expect(200);
-
-      expect(Array.isArray(res.body.items)).toBe(true);
-      const topic = res.body.items.find((item: { title: string }) => item.title === 'E2E topic');
-      expect(topic).toBeDefined();
-      expect(topic.objectKey).toBeUndefined();
-    });
 
     it('returns the markdown content', async () => {
-      const list = await request(app.getHttpServer())
-        .get('/guidebook/topics')
-        .set('Authorization', `Bearer ${userToken}`)
-        .expect(200);
-      const topic = list.body.items.find((item: { title: string }) => item.title === 'E2E topic');
-
       const res = await request(app.getHttpServer())
-        .get(`/guidebook/topics/${topic.id}/content`)
+        .get(`/roadmaps/${roadmapId}/topics/${topicId}/content`)
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
@@ -200,77 +220,118 @@ describe('Guidebook (e2e)', () => {
       expect(res.headers['content-type']).toContain('text/markdown');
     });
 
-    it('returns 404 for an unknown topic', () => {
-      return request(app.getHttpServer())
-        .get('/guidebook/topics/does-not-exist')
+    it('returns 404 for a topic without a document', async () => {
+      const topic = await request(app.getHttpServer())
+        .post(`/admin/roadmaps/${roadmapId}/topics`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ title: 'E2E empty topic' })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .get(`/roadmaps/${roadmapId}/topics/${topic.body.id}/content`)
         .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
   });
 
-  describe('admin mutations', () => {
-    it('updates the topic metadata and replaces the document', async () => {
-      const list = await request(app.getHttpServer())
-        .get('/guidebook/topics')
+  describe('guidebook reads', () => {
+    it('serves the guidebooks to a guest', async () => {
+      const res = await request(app.getHttpServer()).get('/roadmaps').expect(200);
+
+      expect(Array.isArray(res.body.items)).toBe(true);
+    });
+
+    it('lists the guidebooks with their counts', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/roadmaps')
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
-      const topic = list.body.items.find((item: { title: string }) => item.title === 'E2E topic');
+
+      expect(Array.isArray(res.body.items)).toBe(true);
+      const roadmap = res.body.items.find((item: { id: string }) => item.id === roadmapId);
+      expect(roadmap).toBeDefined();
+      expect(roadmap.topicCount).toBeGreaterThan(0);
+      expect(roadmap.stageCount).toBe(1);
+    });
+
+    it('returns the guidebook detail', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/roadmaps/${roadmapId}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(200);
+
+      expect(res.body.stages).toHaveLength(1);
+      expect(res.body.stages[0].checkpoints[0].task).toBe('E2E checkpoint');
+      expect(res.body.topics.length).toBeGreaterThan(0);
+      expect(res.body.topics.find((topic: { id: string }) => topic.id === topicId).hasContent).toBe(
+        true,
+      );
+    });
+
+    it('returns 400 for an invalid id', () => {
+      return request(app.getHttpServer())
+        .get('/roadmaps/not-a-valid-cuid')
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(400);
+    });
+
+    it('returns 404 for an unknown guidebook', () => {
+      return request(app.getHttpServer())
+        .get('/roadmaps/c000000000000000000000000')
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(404);
+    });
+  });
+
+  describe('topic progress', () => {
+    it('returns 401 without a token', () => {
+      return request(app.getHttpServer())
+        .get(`/roadmaps/${roadmapId}/progress`)
+        .expect(401);
+    });
+
+    it('stores the progress of the signed in user', async () => {
+      await request(app.getHttpServer())
+        .patch(`/roadmaps/${roadmapId}/topics/${topicId}/progress`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ status: 'done' })
+        .expect(200);
 
       const res = await request(app.getHttpServer())
-        .patch(`/admin/guidebook/topics/${topic.id}`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('title', 'E2E topic updated')
-        .attach('file', Buffer.from('# Chapter two\n'), 'topic.md')
-        .expect(200);
-
-      expect(res.body.title).toBe('E2E topic updated');
-      expect(storage.objects.size).toBe(1);
-
-      const content = await request(app.getHttpServer())
-        .get(`/guidebook/topics/${topic.id}/content`)
+        .get(`/roadmaps/${roadmapId}/progress`)
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
-      expect(content.text).toBe('# Chapter two\n');
+
+      const entry = res.body.items.find((item: { topicId: string }) => item.topicId === topicId);
+      expect(entry.status).toBe('done');
     });
 
-    it('reorders the topics', async () => {
-      const list = await request(app.getHttpServer())
-        .get('/guidebook/topics')
+    it('rejects an unknown status', () => {
+      return request(app.getHttpServer())
+        .patch(`/roadmaps/${roadmapId}/topics/${topicId}/progress`)
         .set('Authorization', `Bearer ${userToken}`)
-        .expect(200);
-      const topic = list.body.items.find(
-        (item: { title: string }) => item.title === 'E2E topic updated',
-      );
-
-      await request(app.getHttpServer())
-        .post('/admin/guidebook/topics/reorder')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ items: [{ id: topic.id, position: 3 }] })
-        .expect(201);
-
-      const updated = await prisma.client.guidebookTopic.findUnique({
-        where: { id: topic.id },
-      });
-      expect(updated?.position).toBe(3);
+        .send({ status: 'finished' })
+        .expect(400);
     });
 
+    it('does not expose the progress of another user', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/roadmaps/${roadmapId}/progress`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(res.body.items).toHaveLength(0);
+    });
+  });
+
+  describe('admin deletions', () => {
     it('deletes the topic and its object', async () => {
-      const list = await request(app.getHttpServer())
-        .get('/guidebook/topics')
-        .set('Authorization', `Bearer ${userToken}`)
-        .expect(200);
-      const topic = list.body.items.find(
-        (item: { title: string }) => item.title === 'E2E topic updated',
-      );
-
       await request(app.getHttpServer())
-        .delete(`/admin/guidebook/topics/${topic.id}`)
+        .delete(`/admin/topics/${topicId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      const remaining = await prisma.client.guidebookTopic.findUnique({
-        where: { id: topic.id },
-      });
+      const remaining = await prisma.client.topic.findUnique({ where: { id: topicId } });
       expect(remaining).toBeNull();
       expect(storage.objects.size).toBe(0);
     });

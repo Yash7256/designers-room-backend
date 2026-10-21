@@ -71,7 +71,7 @@ export class R2StorageService {
         new GetObjectCommand({ Bucket: this.getBucket(), Key: key }),
       );
       if (!response.Body) {
-        throw new NotFoundException('Guidebook document not found');
+        throw new NotFoundException('Document not found');
       }
       const chunks: Buffer[] = [];
       for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
@@ -88,7 +88,7 @@ export class R2StorageService {
         throw error;
       }
       if (isMissingObjectError(error)) {
-        throw new NotFoundException('Guidebook document not found');
+        throw new NotFoundException('Document not found');
       }
       throw error;
     }
