@@ -113,6 +113,7 @@ export class GuidebookRepository {
         position: true,
         createdAt: true,
         userId: true,
+        metadata: true,
         _count: { select: { topics: true, stages: true } },
       },
     });
@@ -134,6 +135,7 @@ export class GuidebookRepository {
         userId: row.userId,
         topicCount: row._count.topics,
         stageCount: row._count.stages,
+        metadata: (row.metadata as unknown as RoadmapMetadata | null) ?? null,
       })),
       nextCursor,
     };

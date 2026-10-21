@@ -33,6 +33,7 @@ export interface GuidebookSummary {
   userId: string | null;
   topicCount: number;
   stageCount: number;
+  metadata: RoadmapMetadata | null;
 }
 
 export interface StageRow {
