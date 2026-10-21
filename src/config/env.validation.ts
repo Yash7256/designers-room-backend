@@ -23,6 +23,16 @@ export const envValidationSchema = Joi.object({
   // CORS
   CORS_ORIGINS: Joi.string().min(1).default('http://localhost:3000'),
 
+  // SameSite policy for the refresh cookie. Production defaults to 'none' when
+  // the API and the SPA are served from different sites (separate *.vercel.app
+  // hosts are different sites, since vercel.app is a public suffix): the
+  // browser then treats the frontend's API calls as cross-site and would drop
+  // a SameSite=Strict cookie. Set 'strict' or 'lax' when the API is served
+  // from the same site as the SPA.
+  COOKIE_SAMESITE: Joi.string()
+    .valid('strict', 'lax', 'none')
+    .default((parent) => (parent.NODE_ENV === 'production' ? 'none' : 'strict')),
+
   // Google account that receives ADMIN role on first successful OAuth login.
   ADMIN_EMAIL: Joi.string().email({ tlds: { allow: false } }).required(),
 

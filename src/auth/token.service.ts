@@ -7,12 +7,33 @@ const DAY = 86_400_000;
 export const REFRESH_COOKIE = '__Host-refresh';
 export const DEVELOPMENT_REFRESH_COOKIE = 'refresh';
 
+export type RefreshCookieSameSite = 'strict' | 'lax' | 'none';
+
 export function refreshCookieName(isProd: boolean): string {
   return isProd ? REFRESH_COOKIE : DEVELOPMENT_REFRESH_COOKIE;
 }
 
+// The SPA and the API usually live on different sites (e.g. *.vercel.app hosts
+// are separate sites because vercel.app is a public suffix), so the browser
+// treats the frontend's API calls as cross-site and drops SameSite=Strict
+// cookies. In production the refresh cookie therefore has to be
+// SameSite=None; Secure. COOKIE_SAMESITE overrides it when the API is served
+// from the same site as the SPA.
+export function refreshCookieSameSite(isProd: boolean): RefreshCookieSameSite {
+  const configured = process.env['COOKIE_SAMESITE'];
+  if (configured === 'strict' || configured === 'lax' || configured === 'none') return configured;
+  return isProd ? 'none' : 'strict';
+}
+
 export function refreshCookieOptions(isProd: boolean) {
-  return { httpOnly: true as const, secure: isProd, sameSite: 'strict' as const, path: '/', maxAge: 30 * DAY };
+  const sameSite = refreshCookieSameSite(isProd);
+  return {
+    httpOnly: true as const,
+    secure: isProd || sameSite === 'none',
+    sameSite,
+    path: '/',
+    maxAge: 30 * DAY,
+  };
 }
 
 export function sha256(value: string): string {
