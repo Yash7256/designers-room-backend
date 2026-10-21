@@ -15,12 +15,18 @@ import { AdminModule } from './admin/admin.module.js';
 import { WaitlistModule } from './waitlist/waitlist.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 
+const configModule = ConfigModule.forRoot({
+  isGlobal: true,
+  validationSchema: envValidationSchema,
+});
+
+// The validation error rejects this promise; keep it from becoming an
+// unhandled rejection that kills the process before Nest can report it.
+void configModule.catch(() => undefined);
+
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validationSchema: envValidationSchema,
-    }),
+    configModule,
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),

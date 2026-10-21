@@ -15,7 +15,9 @@ type HelmetFactory = (options?: Readonly<HelmetOptions>) => RequestHandler;
 const helmet = helmetImport as unknown as HelmetFactory;
 
 export async function createNestApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule);
+  // abortOnError: false turns a bootstrap failure into a rejected promise
+  // instead of killing the process, so serverless invocations can respond.
+  const app = await NestFactory.create(AppModule, { abortOnError: false });
 
   const config = app.get(ConfigService);
   const nodeEnv = config.get<string>('NODE_ENV', 'development');
@@ -33,6 +35,15 @@ export async function createNestApp(): Promise<INestApplication> {
     const origin = req.get('origin');
     if (origin && !corsOrigins.includes(origin)) {
       res.status(403).json({ statusCode: 403, message: 'Origin is not allowed' });
+      return;
+    }
+    next();
+  });
+
+  // The catch-all rewrite routes /favicon.ico here; answer it directly.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path === '/favicon.ico') {
+      res.status(204).end();
       return;
     }
     next();
@@ -108,5 +119,8 @@ async function bootstrap() {
 // Vercel imports createNestApp through api/index.ts. Keep the local server
 // entrypoint for Docker and `npm run start:prod`.
 if (!process.env['VERCEL']) {
-  void bootstrap();
+  void bootstrap().catch((error: unknown) => {
+    console.error('Failed to start the application', error);
+    process.exitCode = 1;
+  });
 }

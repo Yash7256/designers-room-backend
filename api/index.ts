@@ -15,7 +15,25 @@ async function getHandler(): Promise<ExpressHandler> {
   return handlerPromise;
 }
 
+function redact(message: string): string {
+  return message.replace(/:\/\/[^:\s/]+:[^@\s]+@/g, '://***:***@');
+}
+
 export default async function handler(req: Request, res: Response): Promise<void> {
-  const expressHandler = await getHandler();
-  expressHandler(req, res);
+  try {
+    const expressHandler = await getHandler();
+    expressHandler(req, res);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Backend failed to start:', error);
+    res.statusCode = 500;
+    res.setHeader('content-type', 'application/json');
+    res.end(
+      JSON.stringify({
+        statusCode: 500,
+        message: 'Backend failed to start',
+        detail: redact(message),
+      }),
+    );
+  }
 }
