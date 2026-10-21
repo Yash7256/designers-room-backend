@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Designer's Room API</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0d12;
+        --panel: #141821;
+        --line: #232936;
+        --text: #e6e9ef;
+        --muted: #8b93a7;
+        --accent: #7c9cff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      main { width: 100%; max-width: 34rem; }
+      h1 { margin: 0 0 0.25rem; font-size: 1.5rem; letter-spacing: -0.01em; }
+      p.sub { margin: 0 0 1.75rem; color: var(--muted); }
+      ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+      li { border-bottom: 1px solid var(--line); }
+      a {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem 0.25rem;
+        color: var(--text);
+        text-decoration: none;
+      }
+      a:hover { color: var(--accent); }
+      code { color: var(--accent); font-size: 0.9em; }
+      .tag { color: var(--muted); font-size: 0.85em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Designer's Room API</h1>
+      <p class="sub">The backend is running. Endpoints:</p>
+      <ul>
+        <li><a href="/health"><code>GET /health</code><span class="tag">liveness</span></a></li>
+        <li><a href="/health/ready"><code>GET /health/ready</code><span class="tag">readiness + database</span></a></li>
+        <li><a href="/waitlist"><code>POST /waitlist</code><span class="tag">join the waitlist</span></a></li>
+        <li><a href="/auth/google"><code>GET /auth/google</code><span class="tag">sign in with Google</span></a></li>
+      </ul>
+    </main>
+  </body>
+</html>
