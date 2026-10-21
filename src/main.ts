@@ -4,11 +4,15 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import express from 'express';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import cookieSession from 'cookie-session';
-import helmet from 'helmet';
+import helmetImport, { type HelmetOptions } from 'helmet';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter.js';
+
+type HelmetFactory = (options?: Readonly<HelmetOptions>) => RequestHandler;
+
+const helmet = helmetImport as unknown as HelmetFactory;
 
 export async function createNestApp(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule);
