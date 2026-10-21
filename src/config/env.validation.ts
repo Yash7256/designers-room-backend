@@ -39,6 +39,14 @@ export const envValidationSchema = Joi.object({
   // Required by the Vercel Cron cleanup endpoint in production.
   CRON_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required() }),
 
+  // Cloudflare R2 object storage. All four variables are optional so the app
+  // boots without them, but they must be set together for the guidebook
+  // Markdown uploads and reads to work.
+  R2_ACCOUNT_ID: Joi.string().optional(),
+  R2_ACCESS_KEY_ID: Joi.string().optional(),
+  R2_SECRET_ACCESS_KEY: Joi.string().optional(),
+  R2_BUCKET_NAME: Joi.string().optional(),
+
   // Server
   // The Vercel router is always in front of the function, so on Vercel the
   // effective value is never below 1 even if the variable is set to 0.
