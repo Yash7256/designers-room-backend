@@ -36,6 +36,7 @@ export class AuthController {
 
   @Post('refresh')
   @Public()
+  @Throttle({ default: { ttl: 60_000, limit: 30 } })
   @HttpCode(HttpStatus.OK)
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.refresh(readCookie(req, this.cookieName()), this.authService.metadata(req));
