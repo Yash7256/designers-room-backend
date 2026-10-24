@@ -41,7 +41,6 @@
     "@nestjs/throttler": "^6.7.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "@types/cookie-session": "^2.0.49",
     "@types/passport-google-oauth20": "^2.0.17",
     "cache-manager": "^7.2.9",
     "class-transformer": "^0.5.1",
@@ -61,10 +60,10 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
-    "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
     "@types/compression": "^1.8.1",
+    "@types/cookie-session": "^2.0.49",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
@@ -87,9 +86,7 @@
   "allowScripts": {
     "@prisma/engines@7.10.0": true,
     "@scarf/scarf@1.4.0": true,
-    "bcrypt@6.0.0": true,
     "prisma@7.10.0": true,
-    "esbuild@0.28.2": true,
-    "argon2@0.45.1": true
+    "esbuild@0.28.2": true
   }
 }
