@@ -13,7 +13,7 @@ decision is recorded here before the related task is committed.
 - [x] C6 — Remove TOTP environment config
 - [x] C7 — Remove dead duplicate guard
 - [x] C8 — Remove unused packages
-- [ ] C9 — Remove unused cache module
+- [x] C9 — Remove unused cache module
 - [ ] C10 — Fix stale README
 - [ ] G1 — Prevent account takeover via email reuse
 - [ ] G2 — Restrict admin sessions to `ADMIN_EMAIL`
