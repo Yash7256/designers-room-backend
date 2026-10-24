@@ -4,6 +4,7 @@ import { envValidationSchema } from './env.validation.js';
 const base = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/designers_room?schema=public',
   JWT_SECRET: 'j'.repeat(40),
+  OAUTH_STATE_SECRET: 'o'.repeat(40),
   REFRESH_TOKEN_SECRET: 'r'.repeat(40),
   CRON_SECRET: 'c'.repeat(40),
   GOOGLE_CLIENT_ID: 'client-id',

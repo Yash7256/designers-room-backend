@@ -59,7 +59,7 @@ export async function createNestApp(): Promise<INestApplication> {
   app.use(
     cookieSession({
       name: 'oauth-state',
-      keys: [config.getOrThrow<string>('REFRESH_TOKEN_SECRET')],
+      keys: [config.getOrThrow<string>('OAUTH_STATE_SECRET')],
       httpOnly: true,
       secure: nodeEnv === 'production',
       sameSite: 'lax',

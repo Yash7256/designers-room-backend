@@ -18,7 +18,8 @@ environment used by the frontend:
 - `DIRECT_DATABASE_URL` — direct PostgreSQL URL for Prisma migrations. Keep this
   out of browser code and use it in CI or a trusted migration environment.
 - `JWT_SECRET`
-- `REFRESH_TOKEN_SECRET`
+- `OAUTH_STATE_SECRET`
+- `REFRESH_TOKEN_SECRET` (must be different from `OAUTH_STATE_SECRET`)
 - `CRON_SECRET` — at least 32 random characters.
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`

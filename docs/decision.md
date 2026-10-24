@@ -23,7 +23,7 @@ decision is recorded here before the related task is committed.
 - [x] T2 — Refresh rotation grace window
 - [x] T3 — Real logout
 - [x] T4 — `logoutAll` invalidates live access tokens
-- [ ] T5 — Rename OAuth-state secret
+- [x] T5 — Rename OAuth-state secret
 - [ ] A1 — Await security-critical audit writes
 - [ ] A2 — Complete audit records
 - [ ] M1 — Constant-time cron secret check
