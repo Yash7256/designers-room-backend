@@ -17,14 +17,38 @@ export class AuthService {
   ) {}
 
   async loginWithGoogle(identity: GoogleIdentity, meta?: RequestMeta) {
-    const existing = await this.prisma.client.user.findUnique({ where: { googleId: identity.googleId } });
-    const user = existing ?? await this.prisma.client.user.upsert({
-      where: { email: identity.email },
-      update: { googleId: identity.googleId },
-      create: { email: identity.email, googleId: identity.googleId, name: identity.name },
-    });
-    this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
-    return this.issueTokens(user.id, meta);
+    if (identity.emailVerified !== true) {
+      this.audit.log({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'email_not_verified' } });
+      throw new UnauthorizedException('Google email is not verified');
+    }
+
+    const email = identity.email.toLowerCase().trim();
+    const existingByGoogleId = await this.prisma.client.user.findUnique({ where: { googleId: identity.googleId } });
+    if (existingByGoogleId) {
+      this.audit.log({ action: 'LOGIN', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      return this.issueTokens(existingByGoogleId.id, meta);
+    }
+
+    const existingByEmail = await this.prisma.client.user.findUnique({ where: { email } });
+    if (!existingByEmail) {
+      const user = await this.prisma.client.user.create({ data: { email, googleId: identity.googleId, name: identity.name } });
+      this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      return this.issueTokens(user.id, meta);
+    }
+
+    if (existingByEmail.googleId == null) {
+      const user = await this.prisma.client.user.update({ where: { id: existingByEmail.id }, data: { googleId: identity.googleId } });
+      this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      return this.issueTokens(user.id, meta);
+    }
+
+    if (existingByEmail.googleId !== identity.googleId) {
+      this.audit.log({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'google_id_mismatch', userId: existingByEmail.id } });
+      throw new UnauthorizedException('Account already linked to a different Google account');
+    }
+
+    this.audit.log({ action: 'LOGIN', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+    return this.issueTokens(existingByEmail.id, meta);
   }
 
   async refresh(raw: string | undefined, meta?: RequestMeta) {

@@ -7,6 +7,7 @@ export interface GoogleIdentity {
   googleId: string;
   email: string;
   name: string;
+  emailVerified: boolean;
 }
 
 @Injectable()
@@ -22,15 +23,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   validate(_accessToken: string, _refreshToken: string, profile: Profile): GoogleIdentity {
-    const email = profile.emails?.[0]?.value?.toLowerCase();
+    const email = profile.emails?.[0]?.value?.toLowerCase().trim();
     const emailVerified = profile._json?.['email_verified'];
-    if (!email || emailVerified !== true) {
-      throw new UnauthorizedException('Google did not provide a verified email address');
+    if (!email) {
+      throw new UnauthorizedException('Google did not provide an email address');
     }
     return {
       googleId: profile.id,
       email,
       name: profile.displayName || email.split('@')[0] || 'Google user',
+      emailVerified: emailVerified === true,
     };
   }
 }
