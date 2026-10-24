@@ -43,10 +43,10 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request & { user?: { userId: string } }, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     await this.authService.logout(readCookie(req, this.cookieName()));
-    this.authService.auditLogout(req.user?.userId);
     this.clearRefresh(res);
     return { success: true };
   }
