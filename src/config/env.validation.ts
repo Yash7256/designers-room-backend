@@ -31,7 +31,9 @@ export const envValidationSchema = Joi.object({
     .default((parent) => (parent.NODE_ENV === 'production' ? 'none' : 'strict')),
 
   // Google account that receives ADMIN role on first successful OAuth login.
-  ADMIN_EMAIL: Joi.string().email({ tlds: { allow: false } }).required(),
+  ADMIN_EMAIL: Joi.string()
+    .email({ tlds: { allow: false } })
+    .when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.optional() }),
 
   // Required by the Vercel Cron cleanup endpoint in production.
   CRON_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required() }),

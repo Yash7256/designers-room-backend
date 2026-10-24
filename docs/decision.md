@@ -16,7 +16,7 @@ decision is recorded here before the related task is committed.
 - [x] C9 — Remove unused cache module
 - [x] C10 — Fix stale README
 - [x] G1 — Prevent account takeover via email reuse
-- [ ] G2 — Restrict admin sessions to `ADMIN_EMAIL`
+- [x] G2 — Restrict admin sessions to `ADMIN_EMAIL`
 - [ ] G3 — Remove insecure non-production secret defaults
 - [ ] G4 — Validate OAuth redirect/state handling
 - [ ] T1 — Explicit access-token typing

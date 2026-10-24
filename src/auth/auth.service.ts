@@ -25,6 +25,13 @@ export class AuthService {
     const email = identity.email.toLowerCase().trim();
     const existingByGoogleId = await this.prisma.client.user.findUnique({ where: { googleId: identity.googleId } });
     if (existingByGoogleId) {
+      if (existingByGoogleId.role === 'ADMIN') {
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+        if (!adminEmail || existingByGoogleId.email.toLowerCase().trim() !== adminEmail) {
+          this.audit.log({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+          throw new UnauthorizedException('Admin access denied');
+        }
+      }
       this.audit.log({ action: 'LOGIN', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(existingByGoogleId.id, meta);
     }
@@ -37,6 +44,13 @@ export class AuthService {
     }
 
     if (existingByEmail.googleId == null) {
+      if (existingByEmail.role === 'ADMIN') {
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+        if (!adminEmail || email !== adminEmail) {
+          this.audit.log({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+          throw new UnauthorizedException('Admin access denied');
+        }
+      }
       const user = await this.prisma.client.user.update({ where: { id: existingByEmail.id }, data: { googleId: identity.googleId } });
       this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(user.id, meta);
@@ -45,6 +59,14 @@ export class AuthService {
     if (existingByEmail.googleId !== identity.googleId) {
       this.audit.log({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'google_id_mismatch', userId: existingByEmail.id } });
       throw new UnauthorizedException('Account already linked to a different Google account');
+    }
+
+    if (existingByEmail.role === 'ADMIN') {
+      const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+      if (!adminEmail || existingByEmail.email.toLowerCase().trim() !== adminEmail) {
+        this.audit.log({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+        throw new UnauthorizedException('Admin access denied');
+      }
     }
 
     this.audit.log({ action: 'LOGIN', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
