@@ -6,6 +6,8 @@ import { UsersRepository } from '../users/users.repository.js';
 
 interface JwtPayload {
   sub: string;
+  typ?: string;
+  purpose?: string;
 }
 
 @Injectable()
@@ -25,6 +27,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
+    if (payload.typ !== 'access' || payload.purpose) {
+      throw new UnauthorizedException('Invalid token');
+    }
     const user = await this.usersRepository.findById(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User no longer exists');

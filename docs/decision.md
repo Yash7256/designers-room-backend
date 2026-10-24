@@ -18,8 +18,8 @@ decision is recorded here before the related task is committed.
 - [x] G1 — Prevent account takeover via email reuse
 - [x] G2 — Restrict admin sessions to `ADMIN_EMAIL`
 - [x] G3 — Remove insecure non-production secret defaults
-- [ ] G4 — Validate OAuth redirect/state handling
-- [ ] T1 — Explicit access-token typing
+- [x] G4 — Validate OAuth redirect/state handling (already correct)
+- [x] T1 — Explicit access-token typing
 - [ ] T2 — Refresh rotation grace window
 - [ ] T3 — Real logout
 - [ ] T4 — `logoutAll` invalidates live access tokens

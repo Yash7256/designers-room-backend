@@ -78,7 +78,7 @@ export class AuthService {
     try {
       const rotated = await this.tokens.rotate(raw, meta);
       this.audit.log({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
-      return { access_token: this.jwtService.sign({ sub: rotated.userId }), refresh_token: rotated.raw };
+      return { access_token: this.jwtService.sign({ sub: rotated.userId, typ: 'access' }), refresh_token: rotated.raw };
     } catch (error) {
       if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') this.audit.log({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
       throw error;
@@ -92,6 +92,6 @@ export class AuthService {
 
   private async issueTokens(userId: string, meta?: RequestMeta) {
     const { raw } = await this.tokens.issueRefreshToken(userId, undefined, undefined, meta);
-    return { access_token: this.jwtService.sign({ sub: userId }), refresh_token: raw };
+    return { access_token: this.jwtService.sign({ sub: userId, typ: 'access' }), refresh_token: raw };
   }
 }
