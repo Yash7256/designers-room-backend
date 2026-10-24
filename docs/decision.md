@@ -9,7 +9,7 @@ decision is recorded here before the related task is committed.
 - [x] C2 — Remove TOTP from `AuthService`
 - [x] C3 — Remove TOTP routes from `AuthController`
 - [x] C4 — Drop TOTP tables from Prisma
-- [ ] C5 — Remove `otplib`
+- [x] C5 — Remove `otplib`
 - [ ] C6 — Remove TOTP environment config
 - [ ] C7 — Remove dead duplicate guard
 - [ ] C8 — Remove unused packages
