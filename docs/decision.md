@@ -10,7 +10,7 @@ decision is recorded here before the related task is committed.
 - [x] C3 — Remove TOTP routes from `AuthController`
 - [x] C4 — Drop TOTP tables from Prisma
 - [x] C5 — Remove `otplib`
-- [ ] C6 — Remove TOTP environment config
+- [x] C6 — Remove TOTP environment config
 - [ ] C7 — Remove dead duplicate guard
 - [ ] C8 — Remove unused packages
 - [ ] C9 — Remove unused cache module

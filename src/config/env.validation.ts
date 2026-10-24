@@ -17,9 +17,6 @@ export const envValidationSchema = Joi.object({
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
   REFRESH_TOKEN_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.string().min(32).default('dev-refresh-token-secret-change-me-0000000000') }),
 
-  // TOTP encryption
-  TOTP_ENCRYPTION_KEY: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.string().min(32).default('dev-totp-encryption-key-change-me-0000000000') }),
-
   // CORS
   CORS_ORIGINS: Joi.string().min(1).default('http://localhost:3000'),
 
