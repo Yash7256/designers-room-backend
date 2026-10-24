@@ -8,7 +8,7 @@ decision is recorded here before the related task is committed.
 - [x] C1 — Remove TOTP service and module wiring
 - [x] C2 — Remove TOTP from `AuthService`
 - [x] C3 — Remove TOTP routes from `AuthController`
-- [ ] C4 — Drop TOTP tables from Prisma
+- [x] C4 — Drop TOTP tables from Prisma
 - [ ] C5 — Remove `otplib`
 - [ ] C6 — Remove TOTP environment config
 - [ ] C7 — Remove dead duplicate guard
@@ -51,3 +51,9 @@ decision is recorded here before the related task is committed.
 - Deleting `TotpService` (C1) makes the `AuthService` import (C2) and controller
   routes (C3) uncompilable. To keep the branch green after every commit, C1–C3
   are delivered together as one compile-safe cleanup commit.
+
+### D-004 — C4 migration idempotent
+
+- Generate migration with `prisma migrate dev` as instructed. Edit generated
+  SQL to use `DROP TABLE IF EXISTS` for `TotpRecoveryCode` and `TotpCredential`
+  only (per plan). Do not edit existing migration files.
