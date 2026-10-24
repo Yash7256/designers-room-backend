@@ -11,7 +11,7 @@ decision is recorded here before the related task is committed.
 - [x] C4 — Drop TOTP tables from Prisma
 - [x] C5 — Remove `otplib`
 - [x] C6 — Remove TOTP environment config
-- [ ] C7 — Remove dead duplicate guard
+- [x] C7 — Remove dead duplicate guard
 - [ ] C8 — Remove unused packages
 - [ ] C9 — Remove unused cache module
 - [ ] C10 — Fix stale README
