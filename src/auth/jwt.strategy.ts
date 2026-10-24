@@ -31,17 +31,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (payload.typ !== 'access' || payload.purpose) {
       throw new UnauthorizedException('Invalid token');
     }
-    const user = await this.usersRepository.findById(payload.sub);
-    if (!user) {
-      throw new UnauthorizedException('User no longer exists');
-    }
-    if (user.sessionsRevokedAt) {
-      const revokedAtMs = new Date(user.sessionsRevokedAt).getTime();
-      const issuedAtMs = typeof payload.iat === 'number' ? payload.iat * 1000 : 0;
-      if (issuedAtMs < revokedAtMs) {
-        throw new UnauthorizedException('Token revoked');
+    try {
+      const user = await this.usersRepository.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User no longer exists');
       }
+      const revokedAt = (user as any).sessionsRevokedAt;
+      if (revokedAt) {
+        const revokedAtMs = new Date(revokedAt).getTime();
+        const issuedAtMs = typeof payload.iat === 'number' ? payload.iat * 1000 : 0;
+        if (issuedAtMs < revokedAtMs) {
+          throw new UnauthorizedException('Token revoked');
+        }
+      }
+      return { userId: user.id, role: user.role };
+    } catch (e) {
+      if (e instanceof UnauthorizedException) throw e;
+      throw new UnauthorizedException('Invalid token');
     }
-    return { userId: user.id, role: user.role };
   }
 }
