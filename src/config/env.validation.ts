@@ -15,7 +15,7 @@ export const envValidationSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().min(1).required(),
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
-  REFRESH_TOKEN_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.string().min(32).default('dev-refresh-token-secret-change-me-0000000000') }),
+  REFRESH_TOKEN_SECRET: Joi.string().min(32).required(),
 
   // CORS
   CORS_ORIGINS: Joi.string().min(1).default('http://localhost:3000'),
