@@ -18,7 +18,7 @@ export class AuthService {
 
   async loginWithGoogle(identity: GoogleIdentity, meta?: RequestMeta) {
     if (identity.emailVerified !== true) {
-      this.audit.log({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'email_not_verified' } });
+      await this.audit.logCritical({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'email_not_verified' } });
       throw new UnauthorizedException('Google email is not verified');
     }
 
@@ -28,18 +28,18 @@ export class AuthService {
       if (existingByGoogleId.role === 'ADMIN') {
         const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
         if (!adminEmail || existingByGoogleId.email.toLowerCase().trim() !== adminEmail) {
-          this.audit.log({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+          await this.audit.logCritical({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
           throw new UnauthorizedException('Admin access denied');
         }
       }
-      this.audit.log({ action: 'LOGIN', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(existingByGoogleId.id, meta);
     }
 
     const existingByEmail = await this.prisma.client.user.findUnique({ where: { email } });
     if (!existingByEmail) {
       const user = await this.prisma.client.user.create({ data: { email, googleId: identity.googleId, name: identity.name } });
-      this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(user.id, meta);
     }
 
@@ -47,29 +47,29 @@ export class AuthService {
       if (existingByEmail.role === 'ADMIN') {
         const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
         if (!adminEmail || email !== adminEmail) {
-          this.audit.log({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+          await this.audit.logCritical({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
           throw new UnauthorizedException('Admin access denied');
         }
       }
       const user = await this.prisma.client.user.update({ where: { id: existingByEmail.id }, data: { googleId: identity.googleId } });
-      this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(user.id, meta);
     }
 
     if (existingByEmail.googleId !== identity.googleId) {
-      this.audit.log({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'google_id_mismatch', userId: existingByEmail.id } });
+      await this.audit.logCritical({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'google_id_mismatch', userId: existingByEmail.id } });
       throw new UnauthorizedException('Account already linked to a different Google account');
     }
 
     if (existingByEmail.role === 'ADMIN') {
       const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
       if (!adminEmail || existingByEmail.email.toLowerCase().trim() !== adminEmail) {
-        this.audit.log({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+        await this.audit.logCritical({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
         throw new UnauthorizedException('Admin access denied');
       }
     }
 
-    this.audit.log({ action: 'LOGIN', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+    await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
     return this.issueTokens(existingByEmail.id, meta);
   }
 
@@ -77,17 +77,17 @@ export class AuthService {
     if (!raw) throw new UnauthorizedException('Invalid refresh token');
     try {
       const rotated = await this.tokens.rotate(raw, meta);
-      this.audit.log({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      await this.audit.logCritical({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
       return { access_token: this.jwtService.sign({ sub: rotated.userId, typ: 'access' }), refresh_token: rotated.raw };
     } catch (error) {
-      if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') this.audit.log({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') await this.audit.logCritical({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
       throw error;
     }
   }
 
   async logout(raw?: string) { await this.tokens.revoke(raw); return { success: true }; }
   auditLogout(userId?: string) { this.audit.log({ action: 'LOGOUT', userId }); }
-  async logoutAll(userId: string) { await this.tokens.revokeAll(userId); this.audit.log({ action: 'LOGOUT_ALL', userId }); return { success: true }; }
+  async logoutAll(userId: string) { await this.tokens.revokeAll(userId); await this.audit.logCritical({ action: 'LOGOUT_ALL', userId }); return { success: true }; }
   metadata(req: import('express').Request): RequestMeta { return this.tokens.metadata(req); }
 
   private async issueTokens(userId: string, meta?: RequestMeta) {

@@ -24,8 +24,8 @@ decision is recorded here before the related task is committed.
 - [x] T3 — Real logout
 - [x] T4 — `logoutAll` invalidates live access tokens
 - [x] T5 — Rename OAuth-state secret
-- [ ] A1 — Await security-critical audit writes
-- [ ] A2 — Complete audit records
+- [x] A1 — Await security-critical audit writes
+- [x] A2 — Complete audit records
 - [ ] M1 — Constant-time cron secret check
 - [ ] M2 — Guidebook visibility (report only)
 - [ ] M3 — Duplicate route sets (report only)
