@@ -1,4 +1,3 @@
-import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
@@ -31,7 +30,6 @@ void configModule.catch(() => undefined);
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
     ...(process.env['VERCEL'] ? [] : [ScheduleModule.forRoot()]),
-    CacheModule.register({ isGlobal: true, ttl: 60_000, max: 500 }),
     DatabaseModule,
     AuthModule,
     UsersModule,

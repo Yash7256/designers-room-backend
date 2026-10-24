@@ -12,13 +12,11 @@ export const envValidationSchema = Joi.object({
 
   // JWT / OAuth secrets
   JWT_SECRET: Joi.string().min(32).required(),
+  OAUTH_STATE_SECRET: Joi.string().min(32).required(),
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().min(1).required(),
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
-  REFRESH_TOKEN_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.string().min(32).default('dev-refresh-token-secret-change-me-0000000000') }),
-
-  // TOTP encryption
-  TOTP_ENCRYPTION_KEY: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.string().min(32).default('dev-totp-encryption-key-change-me-0000000000') }),
+  REFRESH_TOKEN_SECRET: Joi.string().min(32).required().invalid(Joi.ref('OAUTH_STATE_SECRET')).messages({ 'any.invalid': 'REFRESH_TOKEN_SECRET must differ from OAUTH_STATE_SECRET' }),
 
   // CORS
   CORS_ORIGINS: Joi.string().min(1).default('http://localhost:3000'),
@@ -34,7 +32,12 @@ export const envValidationSchema = Joi.object({
     .default((parent) => (parent.NODE_ENV === 'production' ? 'none' : 'strict')),
 
   // Google account that receives ADMIN role on first successful OAuth login.
-  ADMIN_EMAIL: Joi.string().email({ tlds: { allow: false } }).required(),
+  ADMIN_EMAIL: Joi.string()
+    .email({ tlds: { allow: false } })
+    .when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.optional() }),
+
+  REFRESH_GRACE_SECONDS: Joi.number().integer().min(0).max(60).default(10),
+  AUDIT_RETENTION_DAYS: Joi.number().integer().min(1).max(3650).default(365),
 
   // Required by the Vercel Cron cleanup endpoint in production.
   CRON_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required() }),

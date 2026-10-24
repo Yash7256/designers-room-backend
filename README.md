@@ -50,11 +50,15 @@ npm run start:dev
 | `DATABASE_URL`     | ✅       | PostgreSQL connection string (host = `postgres` in Docker) |
 | `POSTGRES_PASSWORD`| ✅       | Password for the `postgres` user (used by docker compose) |
 | `JWT_SECRET`       | ✅       | ≥ 32-char random secret for signing JWTs                |
+| `REFRESH_TOKEN_SECRET` | ✅    | Secret used for OAuth state cookies                     |
+| `GOOGLE_CLIENT_ID` | ✅       | Google OAuth client ID                                   |
+| `GOOGLE_CLIENT_SECRET` | ✅   | Google OAuth client secret                               |
+| `GOOGLE_CALLBACK_URL` | ✅    | Google OAuth callback URL                                |
+| `ADMIN_EMAIL`      | ✅       | Google account email to grant ADMIN role                 |
 | `PORT`             | –        | HTTP port (default `3000`)                               |
 | `NODE_ENV`         | –        | `development` / `production` / `test`                    |
 | `CORS_ORIGINS`     | –        | Comma-separated allowed origins (default `http://localhost:3000`) |
-| `JWT_EXPIRES_IN`   | –        | Access token lifetime (default `15m`)                    |
-| `SEED_USER_PASSWORD` | –      | Seed user password (default `password123`)               |
+| `WEB_APP_URL`      | –        | Frontend URL used after OAuth redirects (default `http://localhost:3000`) |
 
 Generate a JWT secret:
 
@@ -64,10 +68,15 @@ openssl rand -hex 64
 
 ## API endpoints
 
+Authentication is Google OAuth 2.0 only.
+
 | Method | Path | Auth | Description |
 | ------ | ---- | ---- | ----------- |
-| POST | `/auth/signup` | – | Register |
-| POST | `/auth/login` | – | Login, returns JWT |
+| GET | `/auth/google` | – | Initiate Google OAuth login |
+| GET | `/auth/google/callback` | – | Google OAuth callback (sets refresh cookie, redirects) |
+| POST | `/auth/refresh` | – | Rotate refresh token (reads `__Host-refresh`/`refresh` cookie) |
+| POST | `/auth/logout` | – | Logout (revokes refresh token, clears cookie) |
+| POST | `/auth/logout-all` | Bearer | Logout from all sessions |
 | GET | `/users/me` | Bearer | Get own profile |
 | PATCH | `/users/me` | Bearer | Update name |
 | GET | `/roadmaps` | – | Paginated list (`?limit=20&cursor=<id>`) |
