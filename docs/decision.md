@@ -20,7 +20,7 @@ decision is recorded here before the related task is committed.
 - [x] G3 — Remove insecure non-production secret defaults
 - [x] G4 — Validate OAuth redirect/state handling (already correct)
 - [x] T1 — Explicit access-token typing
-- [ ] T2 — Refresh rotation grace window
+- [x] T2 — Refresh rotation grace window
 - [ ] T3 — Real logout
 - [ ] T4 — `logoutAll` invalidates live access tokens
 - [ ] T5 — Rename OAuth-state secret

@@ -35,6 +35,8 @@ export const envValidationSchema = Joi.object({
     .email({ tlds: { allow: false } })
     .when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.optional() }),
 
+  REFRESH_GRACE_SECONDS: Joi.number().integer().min(0).max(60).default(10),
+
   // Required by the Vercel Cron cleanup endpoint in production.
   CRON_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required() }),
 
