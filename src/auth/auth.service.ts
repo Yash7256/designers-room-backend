@@ -4,7 +4,6 @@ import { PrismaService } from '../database/prisma.service.js';
 import { AuditService } from './audit.service.js';
 import type { GoogleIdentity } from './google.strategy.js';
 import { TokenService } from './token.service.js';
-import { TotpService } from './totp.service.js';
 
 type RequestMeta = { userAgent?: string; ipAddress?: string };
 
@@ -14,7 +13,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly tokens: TokenService,
     private readonly prisma: PrismaService,
-    private readonly totp: TotpService,
     private readonly audit: AuditService,
   ) {}
 
@@ -25,13 +23,6 @@ export class AuthService {
       update: { googleId: identity.googleId },
       create: { email: identity.email, googleId: identity.googleId, name: identity.name },
     });
-    if (user.role === 'ADMIN') {
-      const credential = await this.prisma.client.totpCredential.findUnique({ where: { userId: user.id } });
-      if (credential?.verifiedAt) {
-        this.audit.log({ action: 'ADMIN_LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
-        return { mfaPending: true as const, mfaToken: this.totp.generateMfaToken(user.id) };
-      }
-    }
     this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
     return this.issueTokens(user.id, meta);
   }
@@ -52,23 +43,6 @@ export class AuthService {
   auditLogout(userId?: string) { this.audit.log({ action: 'LOGOUT', userId }); }
   async logoutAll(userId: string) { await this.tokens.revokeAll(userId); this.audit.log({ action: 'LOGOUT_ALL', userId }); return { success: true }; }
   metadata(req: import('express').Request): RequestMeta { return this.tokens.metadata(req); }
-
-  async enrollTotp(userId: string) { const result = await this.totp.enroll(userId); this.audit.log({ action: 'TOTP_ENROLLED', userId }); return result; }
-  async verifyTotp(userId: string, code: string) {
-    try { const result = await this.totp.verify(userId, code); this.audit.log({ action: 'TOTP_VERIFIED', userId }); return result; }
-    catch (error) { this.audit.log({ action: 'TOTP_FAILED', userId }); throw error; }
-  }
-  async totpChallenge(token: string, code: string, meta?: RequestMeta) {
-    const userId = this.totp.validateMfaToken(token);
-    try { await this.totp.verify(userId, code); return this.issueTokens(userId, meta); }
-    catch (error) { this.audit.log({ action: 'TOTP_FAILED', userId }); throw error; }
-  }
-  async totpRecover(token: string, code: string, meta?: RequestMeta) {
-    const userId = this.totp.validateMfaToken(token);
-    await this.totp.useRecoveryCode(userId, code);
-    this.audit.log({ action: 'RECOVERY_CODE_USED', userId });
-    return this.issueTokens(userId, meta);
-  }
 
   private async issueTokens(userId: string, meta?: RequestMeta) {
     const { raw } = await this.tokens.issueRefreshToken(userId, undefined, undefined, meta);
