@@ -12,11 +12,15 @@ export const envValidationSchema = Joi.object({
 
   // JWT / OAuth secrets
   JWT_SECRET: Joi.string().min(32).required(),
-  OAUTH_STATE_SECRET: Joi.string().min(32).required(),
+  OAUTH_STATE_SECRET: Joi.string().min(32).when('REFRESH_TOKEN_SECRET', {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().min(1).required(),
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
-  REFRESH_TOKEN_SECRET: Joi.string().min(32).required().invalid(Joi.ref('OAUTH_STATE_SECRET')).messages({ 'any.invalid': 'REFRESH_TOKEN_SECRET must differ from OAUTH_STATE_SECRET' }),
+  REFRESH_TOKEN_SECRET: Joi.string().min(32).required(),
 
   // CORS
   CORS_ORIGINS: Joi.string().min(1).default('http://localhost:3000'),
