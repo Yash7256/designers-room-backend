@@ -103,11 +103,20 @@ export class TokenService {
   }
 
   async revoke(raw?: string): Promise<void> {
-    if (raw) await this.prisma.client.refreshToken.updateMany({ where: { tokenHash: sha256(raw), usedAt: null }, data: { usedAt: new Date() } });
+    const now = new Date();
+    if (raw) {
+      const token = await this.prisma.client.refreshToken.findUnique({ where: { tokenHash: sha256(raw) } });
+      if (token) {
+        await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
+        await this.prisma.client.user.update({ where: { id: token.userId }, data: { sessionsRevokedAt: now } });
+      }
+    }
   }
 
   async revokeAll(userId: string, exceptRaw?: string): Promise<void> {
-    await this.prisma.client.refreshToken.updateMany({ where: { userId, usedAt: null, ...(exceptRaw ? { tokenHash: { not: sha256(exceptRaw) } } : {}) }, data: { usedAt: new Date() } });
+    const now = new Date();
+    await this.prisma.client.refreshToken.updateMany({ where: { userId, usedAt: null, ...(exceptRaw ? { tokenHash: { not: sha256(exceptRaw) } } : {}) }, data: { usedAt: now } });
+    await this.prisma.client.user.update({ where: { id: userId }, data: { sessionsRevokedAt: now } });
   }
 
   metadata(req: Request) {

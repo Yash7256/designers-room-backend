@@ -8,6 +8,7 @@ interface JwtPayload {
   sub: string;
   typ?: string;
   purpose?: string;
+  iat?: number;
 }
 
 @Injectable()
@@ -33,6 +34,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersRepository.findById(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
+    }
+    if (user.sessionsRevokedAt) {
+      const revokedAtMs = new Date(user.sessionsRevokedAt).getTime();
+      const issuedAtMs = typeof payload.iat === 'number' ? payload.iat * 1000 : 0;
+      if (issuedAtMs < revokedAtMs) {
+        throw new UnauthorizedException('Token revoked');
+      }
     }
     return { userId: user.id, role: user.role };
   }
