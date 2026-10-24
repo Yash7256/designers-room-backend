@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { Request } from 'express';
 import { PrismaService } from '../database/prisma.service.js';
@@ -42,7 +43,12 @@ export function sha256(value: string): string {
 
 @Injectable()
 export class TokenService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) {}
+
+  private getGraceSeconds(): number {
+    const value = this.config.get<number>('REFRESH_GRACE_SECONDS');
+    return typeof value === 'number' && value >= 0 ? value : 10;
+  }
 
   async issueRefreshToken(userId: string, familyId = randomUUID(), absoluteExpiry = new Date(Date.now() + 90 * DAY), meta?: { userAgent?: string; ipAddress?: string }) {
     const raw = randomBytes(48).toString('base64url');
@@ -62,15 +68,23 @@ export class TokenService {
       if (!token) throw new UnauthorizedException('Invalid refresh token');
       const now = new Date();
       if (token.usedAt || token.revokedAt) {
-      await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
-        return { reuse: true as const };
+        const graceSeconds = this.getGraceSeconds();
+        if (token.usedAt && graceSeconds > 0 && now.getTime() - token.usedAt.getTime() <= graceSeconds * 1000) {
+          return { reuse: 'grace' as const };
+        }
+        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
+        return { reuse: true as const, familyId: token.familyId, userId: token.userId };
       }
       if (token.expiresAt <= now) throw new UnauthorizedException('Refresh token expired');
       if (token.absoluteExpiry <= now) throw new UnauthorizedException('Session expired, please log in again');
       const consumed = await tx.refreshToken.updateMany({ where: { id: token.id, usedAt: null, revokedAt: null }, data: { usedAt: now, lastUsedAt: now } });
       if (consumed.count !== 1) {
+        const graceSeconds = this.getGraceSeconds();
+        if (graceSeconds > 0) {
+          return { reuse: 'grace' as const };
+        }
         await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
-        return { reuse: true as const };
+        return { reuse: true as const, familyId: token.familyId, userId: token.userId };
       }
       const nextRaw = randomBytes(48).toString('base64url');
       const createdAt = now;
@@ -83,16 +97,26 @@ export class TokenService {
       await tx.refreshToken.update({ where: { id: token.id }, data: { replacedBy: next.id } });
       return { reuse: false as const, userId: token.userId, raw: nextRaw, token: next };
     });
-    if (outcome.reuse) throw new UnauthorizedException('Refresh token reuse detected');
+    if (outcome.reuse === 'grace') throw new UnauthorizedException('Invalid refresh token');
+    if (outcome.reuse === true) throw new UnauthorizedException('Refresh token reuse detected');
     return outcome;
   }
 
   async revoke(raw?: string): Promise<void> {
-    if (raw) await this.prisma.client.refreshToken.updateMany({ where: { tokenHash: sha256(raw), usedAt: null }, data: { usedAt: new Date() } });
+    const now = new Date();
+    if (raw) {
+      const token = await this.prisma.client.refreshToken.findUnique({ where: { tokenHash: sha256(raw) } });
+      if (token) {
+        await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
+        await this.prisma.client.user.update({ where: { id: token.userId }, data: { sessionsRevokedAt: now } });
+      }
+    }
   }
 
   async revokeAll(userId: string, exceptRaw?: string): Promise<void> {
-    await this.prisma.client.refreshToken.updateMany({ where: { userId, usedAt: null, ...(exceptRaw ? { tokenHash: { not: sha256(exceptRaw) } } : {}) }, data: { usedAt: new Date() } });
+    const now = new Date();
+    await this.prisma.client.refreshToken.updateMany({ where: { userId, usedAt: null, ...(exceptRaw ? { tokenHash: { not: sha256(exceptRaw) } } : {}) }, data: { usedAt: now } });
+    await this.prisma.client.user.update({ where: { id: userId }, data: { sessionsRevokedAt: now } });
   }
 
   metadata(req: Request) {

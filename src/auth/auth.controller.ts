@@ -1,11 +1,10 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service.js';
 import { Public } from './decorators/public.decorator.js';
-import { Roles } from './decorators/roles.decorator.js';
 import { refreshCookieName, refreshCookieOptions } from './token.service.js';
 import type { GoogleIdentity } from './google.strategy.js';
 
@@ -29,7 +28,6 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: Request & { user: GoogleIdentity }, @Res() res: Response) {
     const result = await this.authService.loginWithGoogle(req.user, this.authService.metadata(req));
-    if ('mfaPending' in result) return res.redirect(`${this.webAppUrl()}/auth/mfa?token=${encodeURIComponent(result.mfaToken)}`);
     this.setRefresh(res, result.refresh_token);
     return res.redirect(`${this.webAppUrl()}/auth/callback`);
   }
@@ -45,10 +43,10 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request & { user?: { userId: string } }, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     await this.authService.logout(readCookie(req, this.cookieName()));
-    this.authService.auditLogout(req.user?.userId);
     this.clearRefresh(res);
     return { success: true };
   }
@@ -59,32 +57,6 @@ export class AuthController {
     await this.authService.logoutAll(req.user.userId);
     this.clearRefresh(res);
     return { success: true };
-  }
-
-  @Post('totp/enroll')
-  @Roles('ADMIN')
-  enrollTotp(@Req() req: Request & { user: { userId: string } }) { return this.authService.enrollTotp(req.user.userId); }
-
-  @Post('totp/verify')
-  @Roles('ADMIN')
-  verifyTotp(@Req() req: Request & { user: { userId: string } }, @Body('code') code: string) { return this.authService.verifyTotp(req.user.userId, code); }
-
-  @Post('totp/challenge')
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  async totpChallenge(@Body('mfaToken') token: string, @Body('code') code: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.totpChallenge(token, code, this.authService.metadata(req));
-    this.setRefresh(res, result.refresh_token);
-    return { access_token: result.access_token };
-  }
-
-  @Post('totp/recover')
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  async totpRecover(@Body('mfaToken') token: string, @Body('code') code: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.totpRecover(token, code, this.authService.metadata(req));
-    this.setRefresh(res, result.refresh_token);
-    return { access_token: result.access_token };
   }
 
   private cookieName() { return refreshCookieName(process.env.NODE_ENV === 'production'); }

@@ -1,5 +1,6 @@
 import { Controller, Get, Headers, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { Public } from './decorators/public.decorator.js';
 import { CleanupService } from './cleanup.service.js';
 
@@ -15,7 +16,10 @@ export class CleanupController {
   @Public()
   async run(@Headers('authorization') authorization?: string) {
     const expected = this.config.getOrThrow<string>('CRON_SECRET');
-    if (authorization !== `Bearer ${expected}`) {
+    const provided = authorization?.startsWith('Bearer ') ? authorization.slice('Bearer '.length) : '';
+    const a = createHash('sha256').update(provided).digest();
+    const b = createHash('sha256').update(expected).digest();
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
       throw new UnauthorizedException();
     }
     return this.cleanup.run();

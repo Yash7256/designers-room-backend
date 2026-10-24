@@ -4,7 +4,6 @@ import { PrismaService } from '../database/prisma.service.js';
 import { AuditService } from './audit.service.js';
 import type { GoogleIdentity } from './google.strategy.js';
 import { TokenService } from './token.service.js';
-import { TotpService } from './totp.service.js';
 
 type RequestMeta = { userAgent?: string; ipAddress?: string };
 
@@ -14,64 +13,85 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly tokens: TokenService,
     private readonly prisma: PrismaService,
-    private readonly totp: TotpService,
     private readonly audit: AuditService,
   ) {}
 
   async loginWithGoogle(identity: GoogleIdentity, meta?: RequestMeta) {
-    const existing = await this.prisma.client.user.findUnique({ where: { googleId: identity.googleId } });
-    const user = existing ?? await this.prisma.client.user.upsert({
-      where: { email: identity.email },
-      update: { googleId: identity.googleId },
-      create: { email: identity.email, googleId: identity.googleId, name: identity.name },
-    });
-    if (user.role === 'ADMIN') {
-      const credential = await this.prisma.client.totpCredential.findUnique({ where: { userId: user.id } });
-      if (credential?.verifiedAt) {
-        this.audit.log({ action: 'ADMIN_LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
-        return { mfaPending: true as const, mfaToken: this.totp.generateMfaToken(user.id) };
+    if (identity.emailVerified !== true) {
+      await this.audit.logCritical({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'email_not_verified' } });
+      throw new UnauthorizedException('Google email is not verified');
+    }
+
+    const email = identity.email.toLowerCase().trim();
+    const existingByGoogleId = await this.prisma.client.user.findUnique({ where: { googleId: identity.googleId } });
+    if (existingByGoogleId) {
+      if (existingByGoogleId.role === 'ADMIN') {
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+        if (!adminEmail || existingByGoogleId.email.toLowerCase().trim() !== adminEmail) {
+          await this.audit.logCritical({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+          throw new UnauthorizedException('Admin access denied');
+        }
+      }
+      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      return this.issueTokens(existingByGoogleId.id, meta);
+    }
+
+    const existingByEmail = await this.prisma.client.user.findUnique({ where: { email } });
+    if (!existingByEmail) {
+      const user = await this.prisma.client.user.create({ data: { email, googleId: identity.googleId, name: identity.name } });
+      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      return this.issueTokens(user.id, meta);
+    }
+
+    if (existingByEmail.googleId == null) {
+      if (existingByEmail.role === 'ADMIN') {
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+        if (!adminEmail || email !== adminEmail) {
+          await this.audit.logCritical({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+          throw new UnauthorizedException('Admin access denied');
+        }
+      }
+      const user = await this.prisma.client.user.update({ where: { id: existingByEmail.id }, data: { googleId: identity.googleId } });
+      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      return this.issueTokens(user.id, meta);
+    }
+
+    if (existingByEmail.googleId !== identity.googleId) {
+      await this.audit.logCritical({ action: 'LOGIN_REJECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google', reason: 'google_id_mismatch', userId: existingByEmail.id } });
+      throw new UnauthorizedException('Account already linked to a different Google account');
+    }
+
+    if (existingByEmail.role === 'ADMIN') {
+      const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+      if (!adminEmail || existingByEmail.email.toLowerCase().trim() !== adminEmail) {
+        await this.audit.logCritical({ action: 'ADMIN_LOGIN_REJECTED', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+        throw new UnauthorizedException('Admin access denied');
       }
     }
-    this.audit.log({ action: 'LOGIN', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
-    return this.issueTokens(user.id, meta);
+
+    await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+    return this.issueTokens(existingByEmail.id, meta);
   }
 
   async refresh(raw: string | undefined, meta?: RequestMeta) {
     if (!raw) throw new UnauthorizedException('Invalid refresh token');
     try {
       const rotated = await this.tokens.rotate(raw, meta);
-      this.audit.log({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
-      return { access_token: this.jwtService.sign({ sub: rotated.userId }), refresh_token: rotated.raw };
+      await this.audit.logCritical({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      return { access_token: this.jwtService.sign({ sub: rotated.userId, typ: 'access' }), refresh_token: rotated.raw };
     } catch (error) {
-      if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') this.audit.log({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') await this.audit.logCritical({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
       throw error;
     }
   }
 
   async logout(raw?: string) { await this.tokens.revoke(raw); return { success: true }; }
   auditLogout(userId?: string) { this.audit.log({ action: 'LOGOUT', userId }); }
-  async logoutAll(userId: string) { await this.tokens.revokeAll(userId); this.audit.log({ action: 'LOGOUT_ALL', userId }); return { success: true }; }
+  async logoutAll(userId: string) { await this.tokens.revokeAll(userId); await this.audit.logCritical({ action: 'LOGOUT_ALL', userId }); return { success: true }; }
   metadata(req: import('express').Request): RequestMeta { return this.tokens.metadata(req); }
-
-  async enrollTotp(userId: string) { const result = await this.totp.enroll(userId); this.audit.log({ action: 'TOTP_ENROLLED', userId }); return result; }
-  async verifyTotp(userId: string, code: string) {
-    try { const result = await this.totp.verify(userId, code); this.audit.log({ action: 'TOTP_VERIFIED', userId }); return result; }
-    catch (error) { this.audit.log({ action: 'TOTP_FAILED', userId }); throw error; }
-  }
-  async totpChallenge(token: string, code: string, meta?: RequestMeta) {
-    const userId = this.totp.validateMfaToken(token);
-    try { await this.totp.verify(userId, code); return this.issueTokens(userId, meta); }
-    catch (error) { this.audit.log({ action: 'TOTP_FAILED', userId }); throw error; }
-  }
-  async totpRecover(token: string, code: string, meta?: RequestMeta) {
-    const userId = this.totp.validateMfaToken(token);
-    await this.totp.useRecoveryCode(userId, code);
-    this.audit.log({ action: 'RECOVERY_CODE_USED', userId });
-    return this.issueTokens(userId, meta);
-  }
 
   private async issueTokens(userId: string, meta?: RequestMeta) {
     const { raw } = await this.tokens.issueRefreshToken(userId, undefined, undefined, meta);
-    return { access_token: this.jwtService.sign({ sub: userId }), refresh_token: raw };
+    return { access_token: this.jwtService.sign({ sub: userId, typ: 'access' }), refresh_token: raw };
   }
 }

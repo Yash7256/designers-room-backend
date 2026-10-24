@@ -7,6 +7,7 @@ export interface UserProfile {
   name: string;
   role: string;
   createdAt: Date;
+  sessionsRevokedAt?: Date | null;
 }
 
 const profileSelect = {
@@ -15,6 +16,7 @@ const profileSelect = {
   name: true,
   createdAt: true,
   role: true,
+  sessionsRevokedAt: true,
 } as const;
 
 @Injectable()

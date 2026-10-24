@@ -9,7 +9,6 @@ import { JwtStrategy } from './jwt.strategy.js';
 import { TokenService } from './token.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
-import { TotpService } from './totp.service.js';
 import { AuditService } from './audit.service.js';
 import { CleanupJob } from './cleanup.job.js';
 import { CleanupService } from './cleanup.service.js';
@@ -43,7 +42,6 @@ import { GoogleStrategy } from './google.strategy.js';
     TokenService,
     JwtAuthGuard,
     RolesGuard,
-    TotpService,
     AuditService,
     CleanupService,
     ...(process.env['VERCEL'] ? [] : [CleanupJob]),
