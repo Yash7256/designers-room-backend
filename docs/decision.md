@@ -26,7 +26,7 @@ decision is recorded here before the related task is committed.
 - [x] T5 — Rename OAuth-state secret
 - [x] A1 — Await security-critical audit writes
 - [x] A2 — Complete audit records
-- [ ] M1 — Constant-time cron secret check
+- [x] M1 — Constant-time cron secret check
 - [ ] M2 — Guidebook visibility (report only)
 - [ ] M3 — Duplicate route sets (report only)
 - [ ] D1 — Fix dependency vulnerabilities
