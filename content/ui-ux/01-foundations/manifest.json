@@ -1,0 +1,337 @@
+{
+  "roadmapSlug": "ui-ux-designer",
+  "stage": 1,
+  "items": [
+    {
+      "slug": "what-design-actually-is",
+      "position": 1,
+      "title": "What design actually is",
+      "description": "A friendly first look at the job behind the job.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 10,
+      "file": "01-what-design-actually-is.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 10,
+        "needs": [],
+        "upNext": "ux-vs-ui-vs-product",
+        "related": ["ux-vs-ui-vs-product", "the-design-process"],
+        "youllNeed": "A notes app or paper. That's it.",
+        "practise": "Teardown one app you use daily (Stage 01 checkpoint).",
+        "seoTitle": "What is design, really? A friendly beginner's guide",
+        "seoDescription": "Design isn't just making things pretty. It's making deliberate choices so something works better for a person. A clear, no-jargon introduction for beginners.",
+        "quiz": [
+          {
+            "question": "Which sentence describes design best?",
+            "options": [
+              "Making things look pretty",
+              "Making deliberate choices so something works better for a person",
+              "Using Figma",
+              "Picking nice colours"
+            ],
+            "answerIndex": 1,
+            "why": "Looks matter, but design is about solving a problem for someone."
+          },
+          {
+            "question": "What makes a decision a design decision?",
+            "options": [
+              "It's made in a design tool",
+              "It changes how someone experiences or uses something",
+              "It involves colour",
+              "A designer made it"
+            ],
+            "answerIndex": 1,
+            "why": "Design decisions are about the effect on the person using the thing, not the tool or the job title."
+          },
+          {
+            "question": "Why do designers care about constraints?",
+            "options": [
+              "They make work faster",
+              "They remove the need for research",
+              "They're the material a designer actually works with",
+              "They make things look minimal"
+            ],
+            "answerIndex": 2,
+            "why": "Constraints are the raw material. Without them, design becomes decoration."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "ux-vs-ui-vs-product",
+      "position": 2,
+      "title": "UX vs UI vs Product",
+      "description": "Same job, different job titles, and why the difference actually matters.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 10,
+      "file": "02-ux-vs-ui-vs-product.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 10,
+        "needs": ["What design actually is"],
+        "upNext": "the-design-process",
+        "related": ["what-design-actually-is", "the-design-process"],
+        "youllNeed": "No tools. Just your brain and maybe a notebook.",
+        "practise": "Open one app and write down three UX decisions, three UI decisions and one product decision it contains.",
+        "seoTitle": "UX vs UI vs Product Design: What's the Difference?",
+        "seoDescription": "UX, UI and product design explained without jargon. Learn what each role actually does, where they overlap, and which one fits the work you want to do.",
+        "quiz": [
+          {
+            "question": "What is the core focus of UX design?",
+            "options": [
+              "How the product looks",
+              "How the product works and feels over time",
+              "The business model",
+              "The code quality"
+            ],
+            "answerIndex": 1,
+            "why": "UX is about the experience of using the product: the flow, the logic, the friction points and how it feels across the whole journey."
+          },
+          {
+            "question": "Which of these is a UI decision?",
+            "options": [
+              "Deciding the onboarding flow should have three steps",
+              "Choosing a 16px font size for body text",
+              "Deciding to build a mobile app instead of a website",
+              "Choosing not to build a feature"
+            ],
+            "answerIndex": 1,
+            "why": "Font size, spacing, colour, radius and motion are UI decisions. They shape the surface the user sees and touches."
+          },
+          {
+            "question": "Which role is closest to owning whether the right thing gets built?",
+            "options": [
+              "UX designer",
+              "UI designer",
+              "Product designer",
+              "Frontend developer"
+            ],
+            "answerIndex": 2,
+            "why": "Product design sits closest to the product problem: what to build, for whom, why now, and how it fits the business."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "the-design-process",
+      "position": 3,
+      "title": "The design process, start to finish",
+      "description": "The loop designers actually use, without the poster version.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "03-the-design-process.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": ["UX vs UI vs Product"],
+        "upNext": "setting-up-figma",
+        "related": ["ux-vs-ui-vs-product", "setting-up-figma"],
+        "youllNeed": "A real problem you've noticed in an app you use.",
+        "practise": "Run the loop on paper once. Pick one screen you use daily and ask what's actually wrong with it.",
+        "seoTitle": "The Design Process, Start to Finish (For Beginners)",
+        "seoDescription": "A practical guide to the design process: understand, define, sketch, test and refine. Learn how real designers move through a problem without pretending it's linear.",
+        "quiz": [
+          {
+            "question": "What's the first move in the design process?",
+            "options": [
+              "Open Figma",
+              "Understand the problem and the person",
+              "Pick colours",
+              "Build a prototype"
+            ],
+            "answerIndex": 1,
+            "why": "You can't design a good answer to a question you haven't understood. Start with the problem and the person."
+          },
+          {
+            "question": "What does \"define\" mean in the process?",
+            "options": [
+              "Choose a font",
+              "Write a clear problem statement and constraints",
+              "Build the final UI",
+              "Show the work to a client"
+            ],
+            "answerIndex": 1,
+            "why": "Define turns a vague mess into a specific problem you can solve and test against."
+          },
+          {
+            "question": "Why do designers test early?",
+            "options": [
+              "To make the work look finished",
+              "To catch wrong assumptions while they're still cheap to fix",
+              "To impress stakeholders",
+              "To avoid talking to users later"
+            ],
+            "answerIndex": 1,
+            "why": "Testing early is about reducing the cost of being wrong. A rough prototype can reveal a bad assumption before you polish it."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "setting-up-figma",
+      "position": 4,
+      "title": "Setting up Figma",
+      "description": "The 30-minute setup that saves you months of mess.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "04-setting-up-figma.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": [],
+        "upNext": "seeing-like-a-designer",
+        "related": ["seeing-like-a-designer", "giving-and-taking-critique"],
+        "youllNeed": "A free Figma account and a browser. Install the desktop app if you can.",
+        "practise": "Set up one project file with pages, a frame and a cover. Nothing fancy.",
+        "seoTitle": "How to Set Up Figma as a Beginner (Without Making a Mess)",
+        "seoDescription": "A simple Figma setup for beginners: projects, pages, frames, layers and naming. Build habits that keep your files clean from day one.",
+        "quiz": [
+          {
+            "question": "What should you do before opening Figma?",
+            "options": [
+              "Pick a colour palette",
+              "Decide what the file is for and who will use it",
+              "Download plugins",
+              "Create a team"
+            ],
+            "answerIndex": 1,
+            "why": "A file's purpose and audience decide how it should be organised. Tool setup comes after that."
+          },
+          {
+            "question": "What's the safest beginner file structure?",
+            "options": [
+              "One page with everything on it",
+              "One project per roadmap, one file per project, pages for explore, wireframes and final",
+              "A new file for every screen",
+              "Only use the drafts folder"
+            ],
+            "answerIndex": 1,
+            "why": "Separating exploration, wireframes and final work keeps the file understandable and prevents accidental edits."
+          },
+          {
+            "question": "Why is naming layers important?",
+            "options": [
+              "It looks professional",
+              "It makes the file searchable and easier for you and others to navigate",
+              "Figma requires it",
+              "It improves performance"
+            ],
+            "answerIndex": 1,
+            "why": "Names are how you and collaborators find things later. A named layer is a decision you don't have to remember."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "seeing-like-a-designer",
+      "position": 5,
+      "title": "Seeing like a designer",
+      "description": "How to notice what everyone else walks past.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "05-seeing-like-a-designer.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": [],
+        "upNext": "giving-and-taking-critique",
+        "related": ["giving-and-taking-critique", "what-design-actually-is"],
+        "youllNeed": "A camera or screenshot tool. A notes app.",
+        "practise": "Screenshot five screens you use daily and write one design observation for each.",
+        "seoTitle": "How to See Like a Designer: A Beginner's Practice",
+        "seoDescription": "Designers notice details other people walk past. Learn a simple daily practice for spotting hierarchy, spacing, contrast and intent in the interfaces around you.",
+        "quiz": [
+          {
+            "question": "What does 'seeing like a designer' mean?",
+            "options": [
+              "Having better taste",
+              "Noticing the choices behind what you're looking at",
+              "Knowing every design tool",
+              "Being able to draw"
+            ],
+            "answerIndex": 1,
+            "why": "It's a trained attention to decisions: what was chosen, what was left out, and what effect it has."
+          },
+          {
+            "question": "What should you look for first when studying a screen?",
+            "options": [
+              "The brand colours",
+              "What your eye goes to first and why",
+              "The number of pixels",
+              "The file name"
+            ],
+            "answerIndex": 1,
+            "why": "Your attention is data. If you notice something first, the design is doing that on purpose (or by accident)."
+          },
+          {
+            "question": "Why is collecting screenshots useful?",
+            "options": [
+              "It fills your camera roll",
+              "It builds a reference library you can compare and learn from",
+              "It replaces practice",
+              "It makes you a designer instantly"
+            ],
+            "answerIndex": 1,
+            "why": "A reference library lets you spot patterns across products and gives you evidence when you critique or design."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "giving-and-taking-critique",
+      "position": 6,
+      "title": "Giving and taking critique",
+      "description": "How to make feedback useful instead of personal.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "06-giving-and-taking-critique.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": [],
+        "upNext": null,
+        "upNextLabel": "Grids & spacing (Stage 02, coming soon)",
+        "related": ["seeing-like-a-designer", "what-design-actually-is"],
+        "youllNeed": "A piece of work you made, and a friend or a notebook.",
+        "practise": "Critique one screen using the I notice / I wonder / What if format. Then ask someone to critique yours.",
+        "seoTitle": "Giving and Taking Design Critique (Without Taking It Personally)",
+        "seoDescription": "Learn how to give useful design feedback and receive critique without defensiveness. A practical framework for beginners and small teams.",
+        "quiz": [
+          {
+            "question": "What makes critique useful?",
+            "options": [
+              "It's blunt",
+              "It's specific and tied to the work, not the person",
+              "It's given by a senior designer",
+              "It's positive"
+            ],
+            "answerIndex": 1,
+            "why": "Useful critique points to a specific decision and its effect. It gives the maker something to act on."
+          },
+          {
+            "question": "What should you do first when receiving critique?",
+            "options": [
+              "Defend your choices",
+              "Listen and ask clarifying questions",
+              "Change everything immediately",
+              "Explain why the critic is wrong"
+            ],
+            "answerIndex": 1,
+            "why": "Listening doesn't mean agreeing. It means understanding the other person's experience before deciding what to do."
+          },
+          {
+            "question": "Which is a good critique question?",
+            "options": [
+              "Do you like it?",
+              "What do you notice first, and what do you think this screen is for?",
+              "Why did you use that colour?",
+              "Is this good?"
+            ],
+            "answerIndex": 1,
+            "why": "Open questions about attention and intent surface useful information without putting the maker on the defensive."
+          }
+        ]
+      }
+    }
+  ]
+}

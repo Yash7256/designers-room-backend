@@ -19,6 +19,7 @@ import {
   GuidebookDetail,
   MarkdownUpload,
   RoadmapMetadata,
+  TopicMetadata,
   TopicStatus,
 } from './guidebook.types.js';
 import { R2StorageService } from '../storage/r2-storage.service.js';
@@ -222,15 +223,19 @@ export class GuidebookService {
 
   async createTopic(roadmapId: string, dto: CreateTopicDto) {
     await this.getDetail(roadmapId);
+    const title = this.validateTitle(dto.title);
     const position = dto.position ?? (await this.repository.nextTopicPosition(roadmapId));
+    const slug = await this.resolveTopicSlug(roadmapId, dto.slug ?? title);
     return this.repository.createTopic({
       roadmapId,
       position,
-      title: this.validateTitle(dto.title),
+      title,
+      slug,
       description: dto.description ?? null,
       stage: dto.stage ?? null,
       difficulty: dto.difficulty ?? null,
       estimatedMinutes: dto.estimatedMinutes ?? null,
+      metadata: (dto.metadata ?? null) as TopicMetadata | null,
     });
   }
 
@@ -238,6 +243,13 @@ export class GuidebookService {
     const data: Parameters<GuidebookRepository['updateTopic']>[1] = {};
     if (dto.title !== undefined) {
       data.title = this.validateTitle(dto.title);
+    }
+    if (dto.slug !== undefined) {
+      const topic = await this.repository.findTopicRecord(id);
+      if (!topic) {
+        throw new NotFoundException(`Topic ${id} not found`);
+      }
+      data.slug = await this.resolveTopicSlug(topic.roadmapId, dto.slug, id);
     }
     if (dto.description !== undefined) {
       data.description = dto.description.trim() ? dto.description.trim() : null;
@@ -253,6 +265,9 @@ export class GuidebookService {
     }
     if (dto.estimatedMinutes !== undefined) {
       data.estimatedMinutes = dto.estimatedMinutes;
+    }
+    if (dto.metadata !== undefined) {
+      data.metadata = (dto.metadata ?? null) as TopicMetadata | null;
     }
     return this.repository.updateTopic(id, data);
   }
@@ -347,5 +362,24 @@ export class GuidebookService {
       suffix += 1;
     }
     throw new ConflictException('Could not allocate a unique slug');
+  }
+
+  private async resolveTopicSlug(
+    roadmapId: string,
+    base: string,
+    excludeId?: string,
+  ): Promise<string> {
+    const normalized = slugify(base) || 'topic';
+    let candidate = normalized;
+    let suffix = 2;
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const existing = await this.repository.findTopicBySlug(roadmapId, candidate);
+      if (!existing || existing.id === excludeId) {
+        return candidate;
+      }
+      candidate = `${normalized.slice(0, SLUG_MAX_LENGTH - 4)}-${suffix}`;
+      suffix += 1;
+    }
+    throw new ConflictException('Could not allocate a unique topic slug');
   }
 }

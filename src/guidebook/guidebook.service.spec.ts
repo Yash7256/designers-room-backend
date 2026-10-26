@@ -56,6 +56,7 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
       status,
     }));
   const findBySlug = vi.fn().mockResolvedValue(null);
+  const findTopicBySlug = vi.fn().mockResolvedValue(null);
   const nextRoadmapPosition = vi.fn().mockResolvedValue(3);
   const nextStagePosition = vi.fn().mockResolvedValue(2);
   const nextCheckpointPosition = vi.fn().mockResolvedValue(1);
@@ -93,6 +94,7 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
     findProgress,
     upsertProgress,
     findBySlug,
+    findTopicBySlug,
     nextRoadmapPosition,
     nextStagePosition,
     nextCheckpointPosition,
@@ -127,6 +129,7 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
       deleteTopic,
       clearTopicStage,
       findBySlug,
+      findTopicBySlug,
       findStage,
       findTopicById,
       findTopicRecord,
@@ -239,7 +242,11 @@ describe('GuidebookService', () => {
     await service.createTopic('roadmap-1', { title: 'Design fundamentals' });
 
     expect(repository.createTopic).toHaveBeenCalledWith(
-      expect.objectContaining({ roadmapId: 'roadmap-1', position: 7 }),
+      expect.objectContaining({
+        roadmapId: 'roadmap-1',
+        position: 7,
+        slug: 'design-fundamentals',
+      }),
     );
   });
 

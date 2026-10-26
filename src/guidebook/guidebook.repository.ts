@@ -7,6 +7,7 @@ import {
   ProgressRow,
   RoadmapMetadata,
   StageRow,
+  TopicMetadata,
   TopicRow,
   TopicStatus,
 } from './guidebook.types.js';
@@ -64,32 +65,38 @@ export interface TopicCreateInput {
   roadmapId: string;
   position: number;
   title: string;
+  slug?: string | null;
   description?: string | null;
   stage?: number | null;
   difficulty?: string | null;
   estimatedMinutes?: number | null;
   objectKey?: string | null;
+  metadata?: TopicMetadata | null;
 }
 
 export interface TopicUpdateInput {
   title?: string;
+  slug?: string | null;
   description?: string | null;
   position?: number;
   stage?: number | null;
   difficulty?: string | null;
   estimatedMinutes?: number | null;
   objectKey?: string | null;
+  metadata?: TopicMetadata | null;
 }
 
 const topicSelect = {
   id: true,
   title: true,
+  slug: true,
   description: true,
   position: true,
   stage: true,
   difficulty: true,
   estimatedMinutes: true,
   objectKey: true,
+  metadata: true,
 } as const;
 
 @Injectable()
@@ -199,11 +206,13 @@ export class GuidebookRepository {
         const topics: TopicRow[] = row.topics.map((topic) => ({
           id: topic.id,
           title: topic.title,
+          slug: topic.slug,
           description: topic.description,
           position: topic.position,
           stage: topic.stage,
           difficulty: topic.difficulty,
           estimatedMinutes: topic.estimatedMinutes,
+          metadata: (topic.metadata as unknown as TopicMetadata | null) ?? null,
           hasContent: Boolean(topic.objectKey),
         }));
         return {
@@ -291,6 +300,13 @@ export class GuidebookRepository {
   findBySlug(slug: string): Promise<{ id: string } | null> {
     return this.prisma.client.roadmap.findUnique({
       where: { slug },
+      select: { id: true },
+    });
+  }
+
+  findTopicBySlug(roadmapId: string, slug: string): Promise<{ id: string } | null> {
+    return this.prisma.client.topic.findUnique({
+      where: { roadmapId_slug: { roadmapId, slug } },
       select: { id: true },
     });
   }
@@ -415,11 +431,13 @@ export class GuidebookRepository {
         roadmapId: data.roadmapId,
         position: data.position,
         title: data.title,
+        slug: data.slug ?? null,
         description: data.description ?? null,
         stage: data.stage ?? null,
         difficulty: data.difficulty ?? null,
         estimatedMinutes: data.estimatedMinutes ?? null,
         objectKey: data.objectKey ?? null,
+        metadata: (data.metadata ?? undefined) as never,
       },
     });
   }
@@ -429,6 +447,7 @@ export class GuidebookRepository {
       where: { id },
       data: {
         ...(data.title !== undefined ? { title: data.title } : {}),
+        ...(data.slug !== undefined ? { slug: data.slug } : {}),
         ...(data.description !== undefined ? { description: data.description } : {}),
         ...(data.position !== undefined ? { position: data.position } : {}),
         ...(data.stage !== undefined ? { stage: data.stage } : {}),
@@ -437,6 +456,7 @@ export class GuidebookRepository {
           ? { estimatedMinutes: data.estimatedMinutes }
           : {}),
         ...(data.objectKey !== undefined ? { objectKey: data.objectKey } : {}),
+        ...(data.metadata !== undefined ? { metadata: (data.metadata ?? null) as never } : {}),
       },
     });
   }

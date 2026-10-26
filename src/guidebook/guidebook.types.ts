@@ -23,6 +23,27 @@ export interface RoadmapMetadata {
   quotes?: string[];
 }
 
+export interface TopicQuizQuestion {
+  question: string;
+  options: string[];
+  answerIndex: number;
+  why: string;
+}
+
+export interface TopicMetadata {
+  level?: string;
+  timeMinutes?: number;
+  needs?: string[];
+  upNext?: string | null;
+  related?: string[];
+  youllNeed?: string | null;
+  practise?: string | null;
+  seoTitle?: string;
+  seoDescription?: string;
+  quiz?: TopicQuizQuestion[];
+  [key: string]: unknown;
+}
+
 export interface GuidebookSummary {
   id: string;
   title: string;
@@ -58,11 +79,13 @@ export interface CheckpointRow {
 export interface TopicRow {
   id: string;
   title: string;
+  slug: string | null;
   description: string | null;
   position: number;
   stage: number | null;
   difficulty: string | null;
   estimatedMinutes: number | null;
+  metadata: TopicMetadata | null;
   hasContent: boolean;
 }
 

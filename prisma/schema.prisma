@@ -80,12 +80,14 @@ model Checkpoint {
 model Topic {
   id               String   @id @default(cuid())
   title            String
+  slug             String?
   description      String?
   position         Int      @default(0)
   stage            Int?
   difficulty       String?
   estimatedMinutes Int?
   objectKey        String?  @unique
+  metadata         Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   roadmapId        String
@@ -93,6 +95,7 @@ model Topic {
   progress         TopicProgress[]
 
   @@unique([roadmapId, position])
+  @@unique([roadmapId, slug])
   @@index([roadmapId, position])
 }
 
