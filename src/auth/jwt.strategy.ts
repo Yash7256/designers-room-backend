@@ -28,26 +28,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    if (payload.typ !== 'access' || payload.purpose) {
+    if (typeof payload.sub !== 'string' || payload.sub.length === 0 || payload.typ !== 'access' || payload.purpose) {
       throw new UnauthorizedException('Invalid token');
     }
-    try {
-      const user = await this.usersRepository.findById(payload.sub);
-      if (!user) {
-        throw new UnauthorizedException('User no longer exists');
-      }
-      const revokedAt = (user as any).sessionsRevokedAt;
-      if (revokedAt) {
-        const revokedAtMs = new Date(revokedAt).getTime();
-        const issuedAtMs = typeof payload.iat === 'number' ? payload.iat * 1000 : 0;
-        if (issuedAtMs < revokedAtMs) {
-          throw new UnauthorizedException('Token revoked');
-        }
-      }
-      return { userId: user.id, role: user.role };
-    } catch (e: any) {
-      if (e instanceof UnauthorizedException) throw e;
-      return { userId: payload.sub, role: 'USER' };
+    const user = await this.usersRepository.findById(payload.sub);
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
     }
+    const revokedAt = user.sessionsRevokedAt;
+    if (revokedAt) {
+      const revokedAtMs = new Date(revokedAt).getTime();
+      const issuedAtMs = typeof payload.iat === 'number' ? payload.iat * 1000 : 0;
+      if (issuedAtMs <= revokedAtMs) {
+        throw new UnauthorizedException('Token revoked');
+      }
+    }
+    return { userId: user.id, role: user.role };
   }
 }

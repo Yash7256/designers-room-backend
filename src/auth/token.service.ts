@@ -72,7 +72,8 @@ export class TokenService {
         if (token.usedAt && graceSeconds > 0 && now.getTime() - token.usedAt.getTime() <= graceSeconds * 1000) {
           return { reuse: 'grace' as const };
         }
-        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
+        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now, revokedAt: now } });
+        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, revokedAt: null }, data: { revokedAt: now } });
         return { reuse: true as const, familyId: token.familyId, userId: token.userId };
       }
       if (token.expiresAt <= now) throw new UnauthorizedException('Refresh token expired');
@@ -83,7 +84,8 @@ export class TokenService {
         if (graceSeconds > 0) {
           return { reuse: 'grace' as const };
         }
-        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
+        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now, revokedAt: now } });
+        await tx.refreshToken.updateMany({ where: { familyId: token.familyId, revokedAt: null }, data: { revokedAt: now } });
         return { reuse: true as const, familyId: token.familyId, userId: token.userId };
       }
       const nextRaw = randomBytes(48).toString('base64url');
@@ -98,7 +100,10 @@ export class TokenService {
       return { reuse: false as const, userId: token.userId, raw: nextRaw, token: next };
     });
     if (outcome.reuse === 'grace') throw new UnauthorizedException('Invalid refresh token');
-    if (outcome.reuse === true) throw new UnauthorizedException('Refresh token reuse detected');
+    if (outcome.reuse === true) {
+      await this.prisma.client.user.update({ where: { id: outcome.userId }, data: { sessionsRevokedAt: new Date() } });
+      throw new UnauthorizedException('Refresh token reuse detected');
+    }
     return outcome;
   }
 
@@ -107,7 +112,8 @@ export class TokenService {
     if (raw) {
       const token = await this.prisma.client.refreshToken.findUnique({ where: { tokenHash: sha256(raw) } });
       if (token) {
-        await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now } });
+        await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now, revokedAt: now } });
+        await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, revokedAt: null }, data: { revokedAt: now } });
         await this.prisma.client.user.update({ where: { id: token.userId }, data: { sessionsRevokedAt: now } });
       }
     }
@@ -115,7 +121,9 @@ export class TokenService {
 
   async revokeAll(userId: string, exceptRaw?: string): Promise<void> {
     const now = new Date();
-    await this.prisma.client.refreshToken.updateMany({ where: { userId, usedAt: null, ...(exceptRaw ? { tokenHash: { not: sha256(exceptRaw) } } : {}) }, data: { usedAt: now } });
+    const where = { userId, ...(exceptRaw ? { tokenHash: { not: sha256(exceptRaw) } } : {}) };
+    await this.prisma.client.refreshToken.updateMany({ where: { ...where, usedAt: null }, data: { usedAt: now, revokedAt: now } });
+    await this.prisma.client.refreshToken.updateMany({ where: { ...where, revokedAt: null }, data: { revokedAt: now } });
     await this.prisma.client.user.update({ where: { id: userId }, data: { sessionsRevokedAt: now } });
   }
 
