@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -14,6 +14,7 @@ import { CleanupJob } from './cleanup.job.js';
 import { CleanupService } from './cleanup.service.js';
 import { CleanupController } from './cleanup.controller.js';
 import { GoogleStrategy } from './google.strategy.js';
+import { GoogleCallbackRedirectMiddleware } from './google-callback-redirect.middleware.js';
 
 @Module({
   imports: [
@@ -48,4 +49,10 @@ import { GoogleStrategy } from './google.strategy.js';
   ],
   exports: [TokenService],
 })
-export class AuthModule {}
+export class AuthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(GoogleCallbackRedirectMiddleware)
+      .forRoutes({ path: 'auth/google/callback', method: RequestMethod.GET });
+  }
+}
