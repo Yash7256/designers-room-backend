@@ -32,6 +32,11 @@ export async function createNestApp(): Promise<INestApplication> {
     .filter(Boolean);
 
   app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path === '/auth' || req.path.startsWith('/auth/')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
     const origin = req.get('origin');
     if (origin && !corsOrigins.includes(origin)) {
       res.status(403).json({ statusCode: 403, message: 'Origin is not allowed' });
