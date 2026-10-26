@@ -1,7 +1,6 @@
 import 'dotenv/config';
-import { randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Prisma, PrismaClient } from '../generated/prisma/client.js';
 
 const connectionString = process.env.DATABASE_URL;
@@ -12,21 +11,6 @@ const databaseUrl = connectionString;
 const validatedAdminEmail = adminEmail;
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
-
-const r2AccountId = process.env.R2_ACCOUNT_ID;
-const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
-const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-const r2Bucket = process.env.R2_BUCKET_NAME;
-
-const storage =
-  r2AccountId && r2AccessKeyId && r2SecretAccessKey && r2Bucket
-    ? new S3Client({
-        region: 'auto',
-        endpoint: `https://${r2AccountId}.r2.cloudflarestorage.com`,
-        credentials: { accessKeyId: r2AccessKeyId, secretAccessKey: r2SecretAccessKey },
-        forcePathStyle: true,
-      })
-    : null;
 
 type SeedStage = {
   position: number;
@@ -123,7 +107,7 @@ async function seedGuidebook(seed: GuidebookSeed) {
   });
 
   const quotes = seed.metadata.quotes;
-  let uploaded = 0;
+  let stored = 0;
 
   for (const stage of seed.stages) {
     const stageRow = await prisma.stage.upsert({
@@ -165,7 +149,11 @@ async function seedGuidebook(seed: GuidebookSeed) {
         },
       });
 
-      if (!storage || topicRow.objectKey) {
+      const existingDocument = await prisma.topicDocument.findUnique({
+        where: { topicId: topicRow.id },
+        select: { topicId: true },
+      });
+      if (existingDocument || topicRow.objectKey) {
         continue;
       }
 
@@ -179,17 +167,16 @@ async function seedGuidebook(seed: GuidebookSeed) {
         checkpoint,
         quotes[topic.position % quotes.length] as string,
       );
-      const objectKey = `roadmaps/${roadmap.id}/topics/${topicRow.id}/${randomUUID()}.md`;
-      await storage.send(
-        new PutObjectCommand({
-          Bucket: r2Bucket as string,
-          Key: objectKey,
-          Body: Buffer.from(document, 'utf-8'),
-          ContentType: 'text/markdown; charset=utf-8',
-        }),
-      );
-      await prisma.topic.update({ where: { id: topicRow.id }, data: { objectKey } });
-      uploaded += 1;
+      await prisma.topicDocument.create({
+        data: {
+          topicId: topicRow.id,
+          body: document,
+          contentType: 'text/markdown; charset=utf-8',
+          sizeBytes: Buffer.byteLength(document, 'utf-8'),
+          contentHash: createHash('sha256').update(document).digest('hex'),
+        },
+      });
+      stored += 1;
     }
 
     for (const checkpoint of stage.checkpoints) {
@@ -217,13 +204,8 @@ async function seedGuidebook(seed: GuidebookSeed) {
   console.log(
     `Guidebook "${roadmap.title}" seeded with ${seed.stages.length} stages, ` +
       `${seed.stages.reduce((total, stage) => total + stage.topics.length, 0)} topics` +
-      (uploaded > 0 ? ` and ${uploaded} uploaded documents.` : '.'),
+      (stored > 0 ? ` and ${stored} documents.` : '.'),
   );
-  if (!storage) {
-    console.log(
-      'R2 credentials are not configured — topic documents were not uploaded. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME, then run the seed again.',
-    );
-  }
 }
 
 async function main() {

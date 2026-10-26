@@ -42,6 +42,15 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
   const findTopicById = vi
     .fn()
     .mockResolvedValue({ id: 'topic-1', objectKey: 'roadmaps/r1/topics/t1/abc.md' });
+  const findTopicContent = vi.fn().mockResolvedValue({
+    id: 'topic-1',
+    objectKey: 'roadmaps/r1/topics/t1/abc.md',
+    document: {
+      body: '# Design fundamentals\n',
+      contentType: 'text/markdown; charset=utf-8',
+      sizeBytes: 25,
+    },
+  });
   const findTopicRecord = vi
     .fn()
     .mockResolvedValue({ id: 'topic-1', objectKey: 'roadmaps/r1/topics/t1/abc.md', roadmapId: 'r1' });
@@ -76,6 +85,8 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
   const createTopic = vi.fn(async (data: { title: string }) => ({ id: 'topic-2', ...data }));
   const updateTopic = vi.fn(async (id: string, data: Record<string, unknown>) => ({ id, ...data }));
   const deleteTopic = vi.fn().mockResolvedValue({ id: 'topic-1' });
+  const upsertTopicDocument = vi.fn().mockResolvedValue({ topicId: 'topic-1' });
+  const deleteTopicDocument = vi.fn().mockResolvedValue({ count: 1 });
 
   const putObject = vi.fn().mockResolvedValue(undefined);
   const getObject = vi
@@ -87,6 +98,7 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
     findAll,
     findDetailById,
     findTopicById,
+    findTopicContent,
     findTopicRecord,
     findTopicObjectKeys,
     findStage,
@@ -111,6 +123,8 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
     createTopic,
     updateTopic,
     deleteTopic,
+    upsertTopicDocument,
+    deleteTopicDocument,
   } as unknown as GuidebookRepository;
   const storage = {
     putObject,
@@ -127,11 +141,14 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
       createTopic,
       updateTopic,
       deleteTopic,
+      upsertTopicDocument,
+      deleteTopicDocument,
       clearTopicStage,
       findBySlug,
       findTopicBySlug,
       findStage,
       findTopicById,
+      findTopicContent,
       findTopicRecord,
       findTopicObjectKeys,
       nextRoadmapPosition,
@@ -172,11 +189,29 @@ describe('GuidebookService', () => {
 
   it('throws when a topic has no document', async () => {
     const { service, repository } = createService();
-    repository.findTopicById.mockResolvedValue({ id: 'topic-1', objectKey: null });
+    repository.findTopicContent.mockResolvedValue({
+      id: 'topic-1',
+      objectKey: null,
+      document: null,
+    });
 
     await expect(service.getTopicContent('roadmap-1', 'topic-1')).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('falls back to object storage when no database document exists', async () => {
+    const { service, repository, getObject } = createService();
+    repository.findTopicContent.mockResolvedValue({
+      id: 'topic-1',
+      objectKey: 'roadmaps/r1/topics/t1/abc.md',
+      document: null,
+    });
+
+    const result = await service.getTopicContent('roadmap-1', 'topic-1');
+
+    expect(getObject).toHaveBeenCalledWith('roadmaps/r1/topics/t1/abc.md');
+    expect(result.content).toBe('# Design fundamentals\n');
   });
 
   it('stores the progress of the signed in user', async () => {
@@ -294,36 +329,41 @@ describe('GuidebookService', () => {
     ).rejects.toBeInstanceOf(PayloadTooLargeException);
   });
 
-  it('stores the document under a server generated key', async () => {
-    const { service, putObject, repository } = createService();
+  it('stores the document in the database', async () => {
+    const { service, repository } = createService();
+    const upload = makeUpload();
 
-    const result = await service.uploadTopicContent('roadmap-1', 'topic-1', makeUpload());
+    const result = await service.uploadTopicContent('roadmap-1', 'topic-1', upload);
 
-    const put = putObject.mock.calls[0];
-    expect(put[0]).toMatch(/^roadmaps\/roadmap-1\/topics\/topic-1\/[0-9a-f-]{36}\.md$/);
-    expect(put[1]).toBeInstanceOf(Buffer);
-    expect(put[2]).toBe('text/markdown; charset=utf-8');
-    expect(repository.updateTopic).toHaveBeenCalledWith('topic-1', { objectKey: put[0] });
-    expect(result.objectKey).toBe(put[0]);
+    expect(repository.upsertTopicDocument).toHaveBeenCalledWith(
+      'topic-1',
+      expect.objectContaining({
+        body: upload.buffer.toString('utf-8'),
+        contentType: 'text/markdown; charset=utf-8',
+        sizeBytes: upload.size,
+      }),
+    );
+    expect(repository.updateTopic).toHaveBeenCalledWith('topic-1', { objectKey: null });
+    expect(result).toEqual({ objectKey: null, sizeBytes: upload.size });
   });
 
-  it('removes the stored object when the database write fails', async () => {
+  it('keeps the database document when the legacy object cleanup fails', async () => {
     const { service, repository, deleteObject } = createService();
-    repository.updateTopic.mockRejectedValueOnce(new Error('database is down'));
+    repository.upsertTopicDocument.mockRejectedValueOnce(new Error('database is down'));
 
     await expect(
       service.uploadTopicContent('roadmap-1', 'topic-1', makeUpload()),
     ).rejects.toThrow('database is down');
-    expect(deleteObject).toHaveBeenCalledOnce();
+    expect(deleteObject).not.toHaveBeenCalled();
   });
 
-  it('removes the previous document when the file is replaced', async () => {
-    const { service, deleteObject, putObject } = createService();
+  it('removes the previous legacy object when the file is replaced', async () => {
+    const { service, deleteObject, repository } = createService();
 
     await service.uploadTopicContent('roadmap-1', 'topic-1', makeUpload());
 
     expect(deleteObject).toHaveBeenCalledWith('roadmaps/r1/topics/t1/abc.md');
-    expect(putObject).toHaveBeenCalledOnce();
+    expect(repository.upsertTopicDocument).toHaveBeenCalledOnce();
   });
 
   it('deletes the stored object when a topic is removed', async () => {
@@ -342,11 +382,12 @@ describe('GuidebookService', () => {
     expect(deleteObject).toHaveBeenCalledWith('roadmaps/r1/topics/t1/abc.md');
   });
 
-  it('clears the document reference when the content is removed', async () => {
+  it('removes the database document and legacy object when content is removed', async () => {
     const { service, repository, deleteObject } = createService();
 
     await service.deleteTopicContent('roadmap-1', 'topic-1');
 
+    expect(repository.deleteTopicDocument).toHaveBeenCalledWith('topic-1');
     expect(deleteObject).toHaveBeenCalledWith('roadmaps/r1/topics/t1/abc.md');
     expect(repository.updateTopic).toHaveBeenCalledWith('topic-1', { objectKey: null });
   });

@@ -97,6 +97,7 @@ const topicSelect = {
   estimatedMinutes: true,
   objectKey: true,
   metadata: true,
+  document: { select: { topicId: true } },
 } as const;
 
 @Injectable()
@@ -213,7 +214,7 @@ export class GuidebookRepository {
           difficulty: topic.difficulty,
           estimatedMinutes: topic.estimatedMinutes,
           metadata: (topic.metadata as unknown as TopicMetadata | null) ?? null,
-          hasContent: Boolean(topic.objectKey),
+          hasContent: Boolean(topic.objectKey || topic.document),
         }));
         return {
           id: row.id,
@@ -238,6 +239,37 @@ export class GuidebookRepository {
       where: { id: topicId },
       select: { id: true, objectKey: true, roadmapId: true },
     }).then((row) => (row && row.roadmapId === roadmapId ? { id: row.id, objectKey: row.objectKey } : null));
+  }
+
+  findTopicContent(
+    roadmapId: string,
+    topicId: string,
+  ): Promise<{
+    id: string;
+    objectKey: string | null;
+    document: {
+      body: string;
+      contentType: string;
+      sizeBytes: number;
+    } | null;
+  } | null> {
+    return this.prisma.client.topic
+      .findUnique({
+        where: { id: topicId },
+        select: {
+          id: true,
+          roadmapId: true,
+          objectKey: true,
+          document: {
+            select: { body: true, contentType: true, sizeBytes: true },
+          },
+        },
+      })
+      .then((row) =>
+        row && row.roadmapId === roadmapId
+          ? { id: row.id, objectKey: row.objectKey, document: row.document }
+          : null,
+      );
   }
 
   findTopicRecord(
@@ -463,5 +495,25 @@ export class GuidebookRepository {
 
   deleteTopic(id: string) {
     return this.prisma.client.topic.delete({ where: { id } });
+  }
+
+  upsertTopicDocument(
+    topicId: string,
+    data: {
+      body: string;
+      contentType: string;
+      sizeBytes: number;
+      contentHash: string;
+    },
+  ) {
+    return this.prisma.client.topicDocument.upsert({
+      where: { topicId },
+      create: { topicId, ...data },
+      update: data,
+    });
+  }
+
+  deleteTopicDocument(topicId: string) {
+    return this.prisma.client.topicDocument.deleteMany({ where: { topicId } });
   }
 }

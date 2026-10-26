@@ -1,10 +1,9 @@
 import 'dotenv/config';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Prisma, PrismaClient } from '../generated/prisma/client.js';
 import type { TopicMetadata } from '../src/guidebook/guidebook.types.js';
 
@@ -95,26 +94,6 @@ async function readMarkdown(file: string): Promise<string> {
   return body;
 }
 
-function createStorage(): S3Client {
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucket = process.env.R2_BUCKET_NAME;
-
-  if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
-    throw new Error(
-      'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME must be set',
-    );
-  }
-
-  return new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-    forcePathStyle: true,
-  });
-}
-
 async function run() {
   const manifest = assertManifest(
     JSON.parse(await readFile(manifestPath, 'utf-8')) as unknown,
@@ -137,13 +116,7 @@ async function run() {
     throw new Error('DATABASE_URL must be set');
   }
 
-  const bucket = process.env.R2_BUCKET_NAME;
-  if (!bucket) {
-    throw new Error('R2_BUCKET_NAME must be set');
-  }
-
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
-  const storage = createStorage();
 
   try {
     const roadmap = await prisma.roadmap.findUnique({
@@ -166,7 +139,7 @@ async function run() {
       );
     }
 
-    let uploaded = 0;
+    let stored = 0;
     let skipped = 0;
 
     for (const item of manifest.items) {
@@ -178,7 +151,12 @@ async function run() {
         where: {
           roadmapId_position: { roadmapId: roadmap.id, position: item.position },
         },
-        select: { id: true, objectKey: true, metadata: true },
+        select: {
+          id: true,
+          objectKey: true,
+          metadata: true,
+          document: { select: { contentHash: true } },
+        },
       });
 
       const topic = existing
@@ -208,46 +186,43 @@ async function run() {
             },
           });
 
-      const existingMetadata = (existing?.metadata as TopicMetadata | null) ?? null;
-      if (existing?.objectKey && existingMetadata?.contentHash === contentHash) {
+      if (existing?.document?.contentHash === contentHash) {
         skipped += 1;
         console.log(`· ${item.slug}: unchanged`);
         continue;
       }
 
-      const objectKey = `roadmaps/${roadmap.id}/topics/${topic.id}/${randomUUID()}.md`;
-      await storage.send(
-        new PutObjectCommand({
-          Bucket: bucket,
-          Key: objectKey,
-          Body: Buffer.from(body, 'utf-8'),
-          ContentType: MARKDOWN_CONTENT_TYPE,
-        }),
-      );
+      await prisma.topicDocument.upsert({
+        where: { topicId: topic.id },
+        create: {
+          topicId: topic.id,
+          body,
+          contentType: MARKDOWN_CONTENT_TYPE,
+          sizeBytes: Buffer.byteLength(body, 'utf-8'),
+          contentHash,
+        },
+        update: {
+          body,
+          contentType: MARKDOWN_CONTENT_TYPE,
+          sizeBytes: Buffer.byteLength(body, 'utf-8'),
+          contentHash,
+        },
+      });
 
-      try {
+      if (existing?.objectKey) {
         await prisma.topic.update({
           where: { id: topic.id },
-          data: { objectKey, metadata: metadata as Prisma.InputJsonValue },
+          data: { objectKey: null },
         });
-      } catch (error) {
-        await storage.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
-        throw error;
       }
 
-      if (existing?.objectKey && existing.objectKey !== objectKey) {
-        await storage.send(
-          new DeleteObjectCommand({ Bucket: bucket, Key: existing.objectKey }),
-        );
-      }
-
-      uploaded += 1;
-      console.log(`✓ ${item.slug}: uploaded`);
+      stored += 1;
+      console.log(`✓ ${item.slug}: stored`);
     }
 
     console.log(
       `Imported ${manifest.items.length} topic(s) for ${roadmap.slug} / stage ${manifest.stage}: ` +
-        `${uploaded} uploaded, ${skipped} unchanged.`,
+        `${stored} stored, ${skipped} unchanged.`,
     );
   } finally {
     await prisma.$disconnect();

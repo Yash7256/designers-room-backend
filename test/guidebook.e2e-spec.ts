@@ -196,18 +196,18 @@ describe('Guidebook (e2e)', () => {
         .expect(400);
     });
 
-    it('stores the markdown object', async () => {
+    it('stores the markdown document', async () => {
       const res = await request(app.getHttpServer())
         .post(`/admin/roadmaps/${roadmapId}/topics/${topicId}/content`)
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', Buffer.from(markdown), 'topic.md')
         .expect(201);
 
-      expect(res.body.objectKey).toMatch(
-        new RegExp(`^roadmaps/${roadmapId}/topics/${topicId}/[0-9a-f-]{36}\\.md$`),
-      );
-      expect(storage.objects.size).toBe(1);
-      expect([...storage.objects.values()][0]?.body.toString('utf-8')).toBe(markdown);
+      expect(res.body.objectKey).toBeNull();
+      const document = await prisma.client.topicDocument.findUnique({
+        where: { topicId },
+      });
+      expect(document?.body).toBe(markdown);
     });
 
     it('returns the markdown content', async () => {
@@ -325,15 +325,18 @@ describe('Guidebook (e2e)', () => {
   });
 
   describe('admin deletions', () => {
-    it('deletes the topic and its object', async () => {
+    it('deletes the topic and its document', async () => {
       await request(app.getHttpServer())
         .delete(`/admin/topics/${topicId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       const remaining = await prisma.client.topic.findUnique({ where: { id: topicId } });
+      const document = await prisma.client.topicDocument.findUnique({
+        where: { topicId },
+      });
       expect(remaining).toBeNull();
-      expect(storage.objects.size).toBe(0);
+      expect(document).toBeNull();
     });
   });
 });

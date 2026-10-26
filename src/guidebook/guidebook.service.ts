@@ -5,7 +5,7 @@ import {
   NotFoundException,
   PayloadTooLargeException,
 } from '@nestjs/common';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { CreateCheckpointDto } from './dto/create-checkpoint.dto.js';
 import { CreateRoadmapDto } from './dto/create-roadmap.dto.js';
 import { CreateStageDto } from './dto/create-stage.dto.js';
@@ -68,9 +68,17 @@ export class GuidebookService {
   }
 
   async getTopicContent(roadmapId: string, topicId: string): Promise<TopicContent> {
-    const topic = await this.repository.findTopicById(roadmapId, topicId);
+    const topic = await this.repository.findTopicContent(roadmapId, topicId);
     if (!topic) {
       throw new NotFoundException(`Topic ${topicId} not found`);
+    }
+    if (topic.document) {
+      return {
+        content: topic.document.body,
+        contentType: topic.document.contentType,
+        sizeBytes: topic.document.sizeBytes,
+        etag: `"${createHash('sha1').update(topic.document.body).digest('hex')}"`,
+      };
     }
     if (!topic.objectKey) {
       throw new NotFoundException('This topic has no document yet');
@@ -294,18 +302,19 @@ export class GuidebookService {
       throw new NotFoundException(`Topic ${topicId} not found`);
     }
     const upload = this.validateUpload(file);
-    const objectKey = `roadmaps/${roadmapId}/topics/${topicId}/${randomUUID()}.md`;
-    await this.storage.putObject(objectKey, upload.buffer, MARKDOWN_CONTENT_TYPE);
-    try {
-      await this.repository.updateTopic(topicId, { objectKey });
-    } catch (error) {
-      await this.storage.deleteObject(objectKey);
-      throw error;
-    }
+    const body = upload.buffer.toString('utf-8');
+    const sizeBytes = upload.buffer.byteLength;
+    await this.repository.upsertTopicDocument(topicId, {
+      body,
+      contentType: MARKDOWN_CONTENT_TYPE,
+      sizeBytes,
+      contentHash: createHash('sha256').update(body).digest('hex'),
+    });
     if (topic.objectKey) {
+      await this.repository.updateTopic(topicId, { objectKey: null });
       await this.storage.deleteObject(topic.objectKey);
     }
-    return { objectKey, sizeBytes: upload.buffer.byteLength };
+    return { objectKey: null, sizeBytes };
   }
 
   async deleteTopicContent(roadmapId: string, topicId: string) {
@@ -313,10 +322,11 @@ export class GuidebookService {
     if (!topic) {
       throw new NotFoundException(`Topic ${topicId} not found`);
     }
+    await this.repository.deleteTopicDocument(topicId);
     if (topic.objectKey) {
+      await this.repository.updateTopic(topicId, { objectKey: null });
       await this.storage.deleteObject(topic.objectKey);
     }
-    await this.repository.updateTopic(topicId, { objectKey: null });
   }
 
   private validateTitle(value: string): string {

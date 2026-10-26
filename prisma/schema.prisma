@@ -13,19 +13,19 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  googleId  String?  @unique
-  name      String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  googleId          String?   @unique
+  name              String
+  role              Role      @default(USER)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   sessionsRevokedAt DateTime?
 
-  refreshTokens     RefreshToken[]
-  auditLogs         AuditLog[]
-  roadmaps          Roadmap[]
-  topicProgress     TopicProgress[]
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+  roadmaps      Roadmap[]
+  topicProgress TopicProgress[]
 }
 
 model Roadmap {
@@ -47,17 +47,17 @@ model Roadmap {
 }
 
 model Stage {
-  id                String   @id @default(cuid())
+  id                String       @id @default(cuid())
   position          Int
   title             String
   subtitle          String?
   byTheEnd          String?
   weekLabel         String?
   prerequisiteStage Int?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
   roadmapId         String
-  roadmap           Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  roadmap           Roadmap      @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
   checkpoints       Checkpoint[]
 
   @@unique([roadmapId, position])
@@ -78,21 +78,22 @@ model Checkpoint {
 }
 
 model Topic {
-  id               String   @id @default(cuid())
+  id               String          @id @default(cuid())
   title            String
   slug             String?
   description      String?
-  position         Int      @default(0)
+  position         Int             @default(0)
   stage            Int?
   difficulty       String?
   estimatedMinutes Int?
-  objectKey        String?  @unique
+  objectKey        String?         @unique
   metadata         Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
   roadmapId        String
-  roadmap          Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  roadmap          Roadmap         @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
   progress         TopicProgress[]
+  document         TopicDocument?
 
   @@unique([roadmapId, position])
   @@unique([roadmapId, slug])
@@ -111,6 +112,17 @@ model TopicProgress {
 
   @@unique([userId, topicId])
   @@index([userId])
+}
+
+model TopicDocument {
+  topicId     String   @id
+  body        String
+  contentType String   @default("text/markdown; charset=utf-8")
+  sizeBytes   Int
+  contentHash String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
 }
 
 model RefreshToken {
@@ -148,8 +160,6 @@ model AuditLog {
   @@index([userId])
   @@index([createdAt])
 }
-
-
 
 model WaitlistEntry {
   id        String   @id @default(cuid())
