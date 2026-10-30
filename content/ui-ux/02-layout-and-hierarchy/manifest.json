@@ -1,0 +1,393 @@
+{
+  "roadmapSlug": "ui-ux-designer",
+  "stage": 2,
+  "items": [
+    {
+      "slug": "grids-and-spacing",
+      "position": 7,
+      "title": "Grids & spacing",
+      "description": "Why some screens feel off — and how a grid and spacing scale fix it.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 20,
+      "file": "01-grids-and-spacing.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 20,
+        "needs": [],
+        "upNext": "typography-basics",
+        "related": ["alignment-and-proximity", "responsive-layout"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
+        "seoTitle": "Grids and spacing in UI design: a beginner's guide",
+        "seoDescription": "Why do some screens feel off? Usually it's the gaps. Learn grids, gutters, margins and a simple spacing scale you can reuse everywhere.",
+        "quiz": [
+          {
+            "question": "What is a gutter?",
+            "options": [
+              "The edge of the screen",
+              "The gap between columns",
+              "A type of font",
+              "The top menu"
+            ],
+            "answerIndex": 1,
+            "why": "Gutters are the gaps between columns that stop content from touching."
+          },
+          {
+            "question": "Why use a spacing scale?",
+            "options": [
+              "It's required by Figma",
+              "Fewer decisions and more consistent layouts",
+              "It makes screens longer",
+              "Developers prefer odd numbers"
+            ],
+            "answerIndex": 1,
+            "why": "Choosing from a few set values saves time and makes everything feel consistent."
+          },
+          {
+            "question": "Which statement about the 8-point scale is accurate?",
+            "options": [
+              "It's a legal standard",
+              "Every screen must use it",
+              "It's a popular habit that works well, not a law",
+              "It only works for mobile"
+            ],
+            "answerIndex": 2,
+            "why": "It's a convention. Use it because it helps, not because someone says you must."
+          },
+          {
+            "question": "White space is...",
+            "options": [
+              "Wasted space",
+              "What lets important things stand out",
+              "Only for minimal designs",
+              "A bug"
+            ],
+            "answerIndex": 1,
+            "why": "Breathing room guides attention and makes screens feel calmer."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "typography-basics",
+      "position": 8,
+      "title": "Typography basics",
+      "description": "Most of an interface is words. Make them easy to read.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 20,
+      "file": "02-typography-basics.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 20,
+        "needs": [],
+        "upNext": "alignment-and-proximity",
+        "related": ["visual-hierarchy", "color-and-contrast"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
+        "seoTitle": "Typography basics for UI designers: size, weight and readability",
+        "seoDescription": "Most of an interface is words. Learn the basics of type: typefaces, size, line height, line length and a tiny type scale you can reuse.",
+        "quiz": [
+          {
+            "question": "What is line height?",
+            "options": [
+              "How tall a letter is",
+              "The space from one line of text to the next",
+              "The size of the heading",
+              "The thickness of the strokes"
+            ],
+            "answerIndex": 1,
+            "why": "Line height controls how much room lines have, which strongly affects readability."
+          },
+          {
+            "question": "How many typefaces should a beginner start with?",
+            "options": [
+              "As many as possible",
+              "At least five",
+              "One or two",
+              "None"
+            ],
+            "answerIndex": 2,
+            "why": "One typeface in several weights is enough for most screens. Fewer choices means more consistency."
+          },
+          {
+            "question": "Why are very long lines of text a problem?",
+            "options": [
+              "They use too much paper",
+              "It's harder for eyes to track back to the next line",
+              "They look too modern",
+              "They're not allowed"
+            ],
+            "answerIndex": 1,
+            "why": "Readers lose their place on very long lines, so comfort drops."
+          },
+          {
+            "question": "What's the first job of typography?",
+            "options": [
+              "Looking trendy",
+              "Matching the logo",
+              "Being read",
+              "Filling space"
+            ],
+            "answerIndex": 2,
+            "why": "If people can't read it comfortably, nothing else about it matters."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "alignment-and-proximity",
+      "position": 9,
+      "title": "Alignment & proximity",
+      "description": "Put related things close together and line things up. That's most of the fix.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "03-alignment-and-proximity.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": ["Grids & spacing"],
+        "upNext": "visual-hierarchy",
+        "related": ["grids-and-spacing", "visual-hierarchy"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
+        "seoTitle": "Alignment and proximity in design: fix messy layouts fast",
+        "seoDescription": "Two ideas fix most messy screens: put related things close together, and line things up. Learn proximity, alignment and grouping without clutter.",
+        "quiz": [
+          {
+            "question": "What does proximity say?",
+            "options": [
+              "Bigger things are more important",
+              "Things that are close together look like they belong together",
+              "Color groups things",
+              "Fonts group things"
+            ],
+            "answerIndex": 1,
+            "why": "Distance tells the eye what's related, even before it reads anything."
+          },
+          {
+            "question": "Where should a form label sit?",
+            "options": [
+              "Equal distance from every field",
+              "Far from its field",
+              "Closer to its own field than to the field above",
+              "At the bottom of the page"
+            ],
+            "answerIndex": 2,
+            "why": "Proximity tells people which label belongs to which field."
+          },
+          {
+            "question": "Why are left-aligned paragraphs easier to read in English?",
+            "options": [
+              "They look fancier",
+              "The eye returns to the same starting edge on each line",
+              "Center alignment is banned",
+              "They save space"
+            ],
+            "answerIndex": 1,
+            "why": "A shared starting edge makes it easier to find the next line."
+          },
+          {
+            "question": "What should you try before adding borders to group things?",
+            "options": [
+              "More colors",
+              "A bigger font",
+              "Using space to separate groups",
+              "Removing text"
+            ],
+            "answerIndex": 2,
+            "why": "Space groups things quietly without adding visual noise."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "visual-hierarchy",
+      "position": 10,
+      "title": "Visual hierarchy",
+      "description": "Decide what people see first, second and third.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "04-visual-hierarchy.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Typography basics", "Alignment & proximity"],
+        "upNext": "color-and-contrast",
+        "related": ["typography-basics", "color-and-contrast"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
+        "seoTitle": "Visual hierarchy in UI design: what people see first",
+        "seoDescription": "Visual hierarchy decides what people notice first, second and third. Learn the three volume knobs, the squint test and how to find your one main thing.",
+        "quiz": [
+          {
+            "question": "What does visual hierarchy do?",
+            "options": [
+              "Makes everything equally loud",
+              "Shows people what to look at first, second and third",
+              "Picks the brand color",
+              "Sets the font"
+            ],
+            "answerIndex": 1,
+            "why": "Hierarchy is the order of attention, so people don't have to guess."
+          },
+          {
+            "question": "If you make everything bold, what happens?",
+            "options": [
+              "Everything becomes important",
+              "The page loads faster",
+              "Nothing stands out",
+              "People read more"
+            ],
+            "answerIndex": 2,
+            "why": "Emphasis only works when it's rare. When everything shouts, nothing does."
+          },
+          {
+            "question": "What's the squint test for?",
+            "options": [
+              "Checking spelling",
+              "Seeing what stands out when details blur",
+              "Choosing colors",
+              "Testing speed"
+            ],
+            "answerIndex": 1,
+            "why": "Blur strips away the details so you can see the real order of attention."
+          },
+          {
+            "question": "Ideally, how many primary actions should one screen have?",
+            "options": ["As many as possible", "Five", "One", "None"],
+            "answerIndex": 2,
+            "why": "One clear main action makes the next step obvious."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "color-and-contrast",
+      "position": 11,
+      "title": "Color & contrast",
+      "description": "Use color with restraint and keep every pair readable.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "05-color-and-contrast.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Visual hierarchy"],
+        "upNext": "responsive-layout",
+        "related": ["visual-hierarchy", "responsive-layout"],
+        "youllNeed": "A free Figma account and a contrast checker in your browser or as a plugin.",
+        "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
+        "seoTitle": "Color and contrast in UI design: a practical guide",
+        "seoDescription": "Build a small, functional palette and check every text and background pair for contrast. A beginner-friendly guide to using color with restraint.",
+        "quiz": [
+          {
+            "question": "What should an accent color usually be reserved for?",
+            "options": [
+              "Every heading",
+              "The most important action or state",
+              "Page backgrounds",
+              "All body text"
+            ],
+            "answerIndex": 1,
+            "why": "An accent works because it is rare. If it is everywhere, it stops pointing at anything."
+          },
+          {
+            "question": "What is a common minimum contrast ratio for normal body text under WCAG AA?",
+            "options": ["1.5:1", "3:1", "4.5:1", "10:1"],
+            "answerIndex": 2,
+            "why": "WCAG AA asks for 4.5:1 for normal text, and 3:1 for large text and interface components."
+          },
+          {
+            "question": "Why is color alone a weak way to signal meaning?",
+            "options": [
+              "It loads slowly",
+              "Some people cannot distinguish the colors",
+              "It is always ugly",
+              "It uses too much ink"
+            ],
+            "answerIndex": 1,
+            "why": "Color vision varies. Pair color with text, an icon or a shape so the meaning survives."
+          },
+          {
+            "question": "What is a good starting point for a UI palette?",
+            "options": [
+              "Ten bright accents",
+              "Neutral surfaces plus one accent and a few semantic colors",
+              "Only black and white",
+              "A different color for every screen"
+            ],
+            "answerIndex": 1,
+            "why": "Neutrals carry most of the interface, one accent directs attention, and semantic colors cover success, warning and error."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "responsive-layout",
+      "position": 12,
+      "title": "Responsive layout",
+      "description": "Design one system that adapts from phone to desktop.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 30,
+      "file": "06-responsive-layout.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 30,
+        "needs": ["Grids & spacing"],
+        "upNext": null,
+        "upNextLabel": "Who are you designing for? (Stage 03, coming soon)",
+        "related": ["grids-and-spacing", "color-and-contrast"],
+        "youllNeed": "A free Figma account and a browser you can resize.",
+        "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
+        "seoTitle": "Responsive layout basics: design for every screen size",
+        "seoDescription": "Learn how to design layouts that adapt from phone to desktop. Breakpoints, reflow patterns, constraints and the checks that catch broken screens.",
+        "quiz": [
+          {
+            "question": "What does responsive layout mean?",
+            "options": [
+              "Making the same layout smaller",
+              "Adapting the layout and content to the space available",
+              "Using only mobile designs",
+              "Loading faster on phones"
+            ],
+            "answerIndex": 1,
+            "why": "Responsive design changes arrangement and priority, not just scale."
+          },
+          {
+            "question": "Where should breakpoints come from?",
+            "options": [
+              "A list of popular devices only",
+              "The points where your layout stops working",
+              "Random numbers",
+              "The brand colors"
+            ],
+            "answerIndex": 1,
+            "why": "Content and layout decide breakpoints. Devices change; the places your design breaks are more stable."
+          },
+          {
+            "question": "What usually happens to a multi-column layout on a narrow screen?",
+            "options": [
+              "Columns get narrower forever",
+              "Columns stack into one column",
+              "Text gets smaller",
+              "The page is hidden"
+            ],
+            "answerIndex": 1,
+            "why": "Stacking keeps content readable and gives each item enough room to be used."
+          },
+          {
+            "question": "Why test a layout at 200% zoom?",
+            "options": [
+              "To check the animation",
+              "To make sure content and actions still work for low-vision users",
+              "To see the code",
+              "To save time"
+            ],
+            "answerIndex": 1,
+            "why": "Zoom exposes layouts that only work at one size. Nothing important should disappear or overlap."
+          }
+        ]
+      }
+    }
+  ]
+}

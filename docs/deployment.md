@@ -32,6 +32,10 @@ environment used by the frontend:
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` —
   optional Cloudflare R2 credentials for legacy guidebook documents. New
   documents are stored in PostgreSQL (see below).
+- `RESEND_API_KEY` and `RESEND_FROM_EMAIL` — optional Resend credentials for
+  transactional email. Set both together. Verify the sender domain in Resend
+  with SPF and DKIM before enabling production traffic. `RESEND_REPLY_TO` is
+  optional.
 
 `TRUST_PROXY` needs no configuration on Vercel: the effective value is never
 below `1` (the Vercel router) whenever the `VERCEL` environment variable is

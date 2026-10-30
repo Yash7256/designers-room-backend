@@ -54,6 +54,16 @@ export const envValidationSchema = Joi.object({
   R2_SECRET_ACCESS_KEY: Joi.string().optional(),
   R2_BUCKET_NAME: Joi.string().optional(),
 
+  // Resend transactional email. Optional so the API boots before email is
+  // configured, but sending requires both the API key and a verified sender.
+  RESEND_API_KEY: Joi.string().trim().allow('').optional(),
+  RESEND_FROM_EMAIL: Joi.string().trim().allow('').min(3).optional(),
+  RESEND_REPLY_TO: Joi.string()
+    .trim()
+    .allow('')
+    .email({ tlds: { allow: false } })
+    .optional(),
+
   // Server
   // The Vercel router is always in front of the function, so on Vercel the
   // effective value is never below 1 even if the variable is set to 0.
@@ -67,4 +77,4 @@ export const envValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
-});
+}).and('RESEND_API_KEY', 'RESEND_FROM_EMAIL');

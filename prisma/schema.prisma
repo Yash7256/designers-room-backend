@@ -26,6 +26,11 @@ model User {
   auditLogs     AuditLog[]
   roadmaps      Roadmap[]
   topicProgress TopicProgress[]
+  attempts      Attempt[]
+  xpLedger      XpLedger[]
+  weeklyScores  WeeklyScore[]
+  userBadges    UserBadge[]
+  userStreak    UserStreak?
 }
 
 model Roadmap {
@@ -169,3 +174,186 @@ model WaitlistEntry {
 
   @@index([createdAt, id])
 }
+
+
+enum WeekStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  ARCHIVED
+}
+
+enum ChallengeType {
+  SPOT_ISSUE
+  MCQ
+  SHORT_ANSWER
+  CRITIQUE
+  FIX_IN_WORDS
+  SCENARIO
+  ORDERING
+}
+
+enum ChallengeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  GRADING
+  GRADED
+  FAILED_GRADING
+}
+
+enum GradeMethod {
+  AUTO
+  AI
+}
+
+model Week {
+  id        String     @id @default(cuid())
+  number    Int        @unique
+  theme     String
+  startsAt  DateTime
+  endsAt    DateTime
+  status    WeekStatus @default(DRAFT)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  challenges   Challenge[]
+  xpLedger     XpLedger[]
+  weeklyScores WeeklyScore[]
+}
+
+model Challenge {
+  id           String          @id @default(cuid())
+  weekId       String
+  week         Week            @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  dayNumber    Int
+  type         ChallengeType
+  title        String
+  brief        String
+  imageUrls    String[]        @default([])
+  payload      Json?
+  answerKey    Json?
+  rubricId     String?
+  rubric       Rubric?         @relation(fields: [rubricId], references: [id], onDelete: SetNull)
+  maxXp        Int             @default(100)
+  difficulty   String?
+  status       ChallengeStatus @default(DRAFT)
+  version      Int             @default(1)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  attempts Attempt[]
+
+  @@unique([weekId, dayNumber])
+  @@index([weekId, dayNumber])
+}
+
+model Rubric {
+  id        String   @id @default(cuid())
+  name      String
+  criteria  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  challenges Challenge[]
+}
+
+model Attempt {
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId      String
+  challenge        Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challengeVersion Int
+  status           AttemptStatus @default(IN_PROGRESS)
+  answer           Json?
+  startedAt        DateTime      @default(now())
+  submittedAt      DateTime?
+  gradedAt         DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  grade     Grade?
+  xpLedgers XpLedger[]
+
+  @@unique([userId, challengeId])
+  @@index([userId, status])
+}
+
+model Grade {
+  id        String      @id @default(cuid())
+  attemptId String      @unique
+  attempt   Attempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  method    GradeMethod
+  scores    Json
+  totalScore Int
+  feedback  String?
+  modelInfo Json?
+  createdAt DateTime    @default(now())
+}
+
+model XpLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attemptId String
+  attempt   Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  weekId    String
+  week      Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  points    Int
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([weekId])
+}
+
+model WeeklyScore {
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekId         String
+  week           Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  totalXp        Int      @default(0)
+  completedCount Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  @@id([userId, weekId])
+  @@index([weekId, totalXp(sort: Desc)])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  name        String
+  description String?
+  criteria    Json
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+}
+
+model UserStreak {
+  userId         String   @id
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  current        Int      @default(0)
+  longest        Int      @default(0)
+  lastActiveDate DateTime?
+  updatedAt      DateTime @updatedAt
+}
+

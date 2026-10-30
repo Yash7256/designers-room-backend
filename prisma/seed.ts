@@ -698,7 +698,7 @@ const GUIDEBOOK_SEEDS: GuidebookSeed[] = [
         checkpoints: [
           {
             position: 1,
-            task: 'Fix a messy screen with 3 techniques',
+            task: 'Fix a messy screen with 3 text styles',
             timeEstimate: '~2 hrs',
           },
         ],

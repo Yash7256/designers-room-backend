@@ -40,4 +40,35 @@ describe('envValidationSchema', () => {
 
     expect(error).toBeDefined();
   });
+
+  it('accepts Resend configuration when present', () => {
+    const { error } = envValidationSchema.validate({
+      ...base,
+      RESEND_API_KEY: 're_test_key',
+      RESEND_FROM_EMAIL: 'Designers Room <hello@example.com>',
+      RESEND_REPLY_TO: 'reply@example.com',
+    });
+
+    expect(error).toBeUndefined();
+  });
+
+  it('accepts empty Resend values from .env.example', () => {
+    const { error } = envValidationSchema.validate({
+      ...base,
+      RESEND_API_KEY: '',
+      RESEND_FROM_EMAIL: '',
+      RESEND_REPLY_TO: '',
+    });
+
+    expect(error).toBeUndefined();
+  });
+
+  it('requires the Resend API key and sender together', () => {
+    const { error } = envValidationSchema.validate({
+      ...base,
+      RESEND_API_KEY: 're_test_key',
+    });
+
+    expect(error).toBeDefined();
+  });
 });

@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { WaitlistModule } from './waitlist/waitlist.module.js';
 import { GuidebookModule } from './guidebook/guidebook.module.js';
+import { EmailModule } from './email/email.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
 
@@ -36,6 +37,15 @@ void configModule.catch(() => undefined);
     HealthModule,
     WaitlistModule,
     GuidebookModule,
+    EmailModule,
+    CalendarModule,
+    ChallengesModule,
+    AttemptsModule,
+    GradingModule,
+    ScoringModule,
+    LeaderboardModule,
+    AdminChallengesModule,
+    QueuesModule,
   ],
   controllers: [AppController],
   providers: [
@@ -48,3 +58,13 @@ void configModule.catch(() => undefined);
   ],
 })
 export class AppModule {}
+
+// Challenges modules
+import { CalendarModule } from './calendar/calendar.module.js';
+import { ChallengesModule } from './challenges/challenges.module.js';
+import { AttemptsModule } from './attempts/attempts.module.js';
+import { GradingModule } from './grading/grading.module.js';
+import { ScoringModule } from './scoring/scoring.module.js';
+import { LeaderboardModule } from './leaderboard/leaderboard.module.js';
+import { AdminChallengesModule } from './admin-challenges/admin-challenges.module.js';
+import { QueuesModule } from './queues/queues.module.js';

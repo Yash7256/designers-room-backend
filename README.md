@@ -55,6 +55,9 @@ npm run start:dev
 | `GOOGLE_CLIENT_SECRET` | ✅   | Google OAuth client secret                               |
 | `GOOGLE_CALLBACK_URL` | ✅    | Google OAuth callback URL                                |
 | `ADMIN_EMAIL`      | ✅       | Google account email to grant ADMIN role                 |
+| `RESEND_API_KEY`   | –        | Resend API key; required to send email                  |
+| `RESEND_FROM_EMAIL`| –        | Verified Resend sender, e.g. `Designers Room <hello@example.com>` |
+| `RESEND_REPLY_TO`  | –        | Optional Reply-To address for transactional email       |
 | `PORT`             | –        | HTTP port (default `3000`)                               |
 | `NODE_ENV`         | –        | `development` / `production` / `test`                    |
 | `CORS_ORIGINS`     | –        | Comma-separated allowed origins (default `http://localhost:3000`) |
@@ -65,6 +68,30 @@ Generate a JWT secret:
 ```bash
 openssl rand -hex 64
 ```
+
+## Transactional email (Resend)
+
+`EmailService` is registered globally by `EmailModule`. Set both
+`RESEND_API_KEY` and `RESEND_FROM_EMAIL` to enable sending; verify the sending
+domain in Resend first. The service adds a 10-second timeout, retries transient
+failures once, and reuses an idempotency key so retries do not duplicate mail.
+
+```ts
+import { EmailService } from './email/email.service.js';
+
+constructor(private readonly email: EmailService) {}
+
+await this.email.send({
+  to: 'user@example.com',
+  subject: 'Welcome to Designers Room',
+  html: '<p>Hello</p>',
+  text: 'Hello',
+});
+```
+
+`isConfigured()` lets optional workflows skip email when credentials are
+absent. A missing configuration throws `ServiceUnavailableException` at send
+time; provider failures throw `BadGatewayException`.
 
 ## API endpoints
 
@@ -94,4 +121,16 @@ npm test               # Unit tests (vitest)
 npm run test:e2e       # End-to-end tests
 npm run prisma:generate # Regenerate Prisma client
 npm run prisma:migrate  # Create + run migration (dev)
+
+# Import guidebook content (stage 1 by default)
+npm run guidebook:import
+
+# Import a specific stage's manifest
+npm run guidebook:import -- --manifest content/ui-ux/02-layout-and-hierarchy/manifest.json
+
+# Validate a manifest and its Markdown without writing to the database
+npm run guidebook:import -- --manifest content/ui-ux/02-layout-and-hierarchy/manifest.json --dry-run
 ```
+
+Add `--manifest <path>` to import any stage. The manifest path is resolved
+relative to the directory you run the command from.

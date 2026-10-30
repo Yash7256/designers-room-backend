@@ -28,8 +28,16 @@ type ImportManifest = {
 };
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-const contentDirectory = resolve(scriptDirectory, '../content/ui-ux/01-foundations');
-const manifestPath = resolve(contentDirectory, 'manifest.json');
+const manifestFlagIndex = process.argv.indexOf('--manifest');
+const manifestArgument =
+  manifestFlagIndex === -1 ? undefined : process.argv[manifestFlagIndex + 1];
+if (manifestFlagIndex !== -1 && !manifestArgument) {
+  throw new Error('--manifest needs a path to a manifest.json file');
+}
+const manifestPath = manifestArgument
+  ? resolve(process.cwd(), manifestArgument)
+  : resolve(scriptDirectory, '../content/ui-ux/01-foundations/manifest.json');
+const contentDirectory = dirname(manifestPath);
 const dryRun = process.argv.includes('--dry-run');
 
 function assertManifest(value: unknown): ImportManifest {
