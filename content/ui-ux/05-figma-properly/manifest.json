@@ -1,0 +1,528 @@
+{
+  "roadmapSlug": "ui-ux-designer",
+  "stage": 5,
+  "items": [
+    {
+      "slug": "frames-and-auto-layout",
+      "position": 26,
+      "title": "Frames & auto layout",
+      "description": "Auto layout makes things resize themselves around their content. Learn it once and you'll stop nudging boxes by hand.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 30,
+      "file": "01-frames-and-auto-layout.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 30,
+        "needs": ["Setting up Figma"],
+        "upNext": "components-and-variants",
+        "related": ["setting-up-figma", "grids-and-spacing"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Figma auto layout for beginners: frames that resize themselves",
+        "seoDescription": "Learn Figma auto layout: direction, gap, padding, and hug vs fill. Build a button and a card that resize around their content.",
+        "quiz": [
+          {
+            "question": "Which shortcut adds auto layout?",
+            "options": ["Shift + 1", "Shift + A", "Cmd/Ctrl + D", "F"],
+            "answerIndex": 1,
+            "why": "Shift + A adds auto layout to your selection."
+          },
+          {
+            "question": "What does \"Hug contents\" do?",
+            "options": [
+              "Stretches to fill the parent",
+              "Shrinks the frame to fit what's inside",
+              "Locks the size",
+              "Hides the layer"
+            ],
+            "answerIndex": 1,
+            "why": "It's ideal for things like buttons that should fit their text."
+          },
+          {
+            "question": "A paragraph won't wrap when you shrink the card. What's the likely cause?",
+            "options": [
+              "The font",
+              "The color",
+              "The text is set to Fixed instead of Fill container",
+              "The frame is too small"
+            ],
+            "answerIndex": 2,
+            "why": "Fill container lets text adapt to the available width."
+          },
+          {
+            "question": "Where should the gap values come from?",
+            "options": [
+              "A random number",
+              "Your spacing scale",
+              "Whatever feels right today",
+              "Figma's defaults"
+            ],
+            "answerIndex": 1,
+            "why": "Using the same few values keeps your layouts consistent."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "components-and-variants",
+      "position": 27,
+      "title": "Components & variants",
+      "description": "Build it once as a component, use copies everywhere, and change it in one place. Variants keep the different versions together.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 30,
+      "file": "02-components-and-variants.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 30,
+        "needs": ["Frames & auto layout"],
+        "upNext": "styles-and-variables",
+        "related": ["frames-and-auto-layout", "design-systems-101"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Figma components and variants: build once, reuse everywhere",
+        "seoDescription": "Learn how Figma components, instances and variants work, so you can change a button once and update it everywhere.",
+        "quiz": [
+          {
+            "question": "What is an instance?",
+            "options": [
+              "The original component",
+              "A linked copy of a main component",
+              "A type of frame",
+              "A plugin"
+            ],
+            "answerIndex": 1,
+            "why": "Instances follow the main component's changes."
+          },
+          {
+            "question": "What are variants for?",
+            "options": [
+              "Making things colorful",
+              "Holding different versions of one component together",
+              "Exporting files",
+              "Locking layers"
+            ],
+            "answerIndex": 1,
+            "why": "One button can have types, states and sizes without ten separate components."
+          },
+          {
+            "question": "What are overrides?",
+            "options": [
+              "Mistakes",
+              "Allowed changes on an instance, like text, that keep the link",
+              "A way to delete components",
+              "Locked settings"
+            ],
+            "answerIndex": 1,
+            "why": "Overrides let you adapt a copy without breaking its connection."
+          },
+          {
+            "question": "When should you detach an instance?",
+            "options": [
+              "Always",
+              "To fix small things",
+              "Rarely, and only when you truly want it separate",
+              "Before every export"
+            ],
+            "answerIndex": 2,
+            "why": "Detaching loses the link, so the instance won't follow future updates."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "styles-and-variables",
+      "position": 28,
+      "title": "Styles & variables",
+      "description": "Name your colors, text and spacing once, then use the names. Change a value in one place and everything follows.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "03-styles-and-variables.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Components & variants"],
+        "upNext": "constraints-and-responsive",
+        "related": ["typography-basics", "color-and-contrast"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Figma styles and variables: name it once, change it everywhere",
+        "seoDescription": "Learn Figma color styles, text styles and variables, and why naming by purpose beats naming by value.",
+        "quiz": [
+          {
+            "question": "What's the main benefit of styles and variables?",
+            "options": [
+              "They look nicer",
+              "Change a value once and everything using it updates",
+              "They compress files",
+              "They're required"
+            ],
+            "answerIndex": 1,
+            "why": "Consistency and speed come from reusing named values."
+          },
+          {
+            "question": "What are modes used for?",
+            "options": [
+              "Saving files",
+              "Switching a set of values, like light and dark",
+              "Exporting images",
+              "Locking layers"
+            ],
+            "answerIndex": 1,
+            "why": "A mode swaps all variable values at once."
+          },
+          {
+            "question": "Which name is better for a color?",
+            "options": ["Orange", "Color 7", "Action", "Nice one"],
+            "answerIndex": 2,
+            "why": "Names that describe purpose stay true when the value changes."
+          },
+          {
+            "question": "What should you start with?",
+            "options": [
+              "Two hundred colors",
+              "A small set, like about five colors and five text styles",
+              "Nothing",
+              "Only shadows"
+            ],
+            "answerIndex": 1,
+            "why": "A small, clear set gets used. A huge one gets ignored."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "constraints-and-responsive",
+      "position": 29,
+      "title": "Constraints & responsive",
+      "description": "Constraints tell elements where to stick when a frame resizes. Together with auto layout, they let one design flex across screen sizes.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "04-constraints-and-responsive.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Frames & auto layout"],
+        "upNext": "prototyping-basics",
+        "related": ["responsive-layout", "frames-and-auto-layout"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Figma constraints and responsive design, explained",
+        "seoDescription": "Learn how Figma constraints and auto layout work together so one design flexes across phone, tablet and desktop sizes.",
+        "quiz": [
+          {
+            "question": "What do constraints do?",
+            "options": [
+              "Lock layers",
+              "Tell elements which edges to stay attached to when a frame resizes",
+              "Change colors",
+              "Export files"
+            ],
+            "answerIndex": 1,
+            "why": "They're like pins on a corkboard."
+          },
+          {
+            "question": "Which is usually better for a card whose text keeps changing?",
+            "options": ["Constraints", "Auto layout", "Fixed sizes", "Scale"],
+            "answerIndex": 1,
+            "why": "Auto layout adapts to changing content."
+          },
+          {
+            "question": "How do you check that a layout is responsive?",
+            "options": [
+              "Hope",
+              "Resize the frame and see what breaks",
+              "Add more colors",
+              "Ask the client"
+            ],
+            "answerIndex": 1,
+            "why": "Resizing quickly reveals problems."
+          },
+          {
+            "question": "Why set a maximum width on text blocks?",
+            "options": [
+              "To save memory",
+              "So lines don't become too long to read on wide screens",
+              "Because Figma requires it",
+              "To make text bigger"
+            ],
+            "answerIndex": 1,
+            "why": "Very long lines are tiring to read."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "prototyping-basics",
+      "position": 30,
+      "title": "Prototyping basics",
+      "description": "A prototype links your screens so people can click through them. It's for testing the flow, not for showing off animation.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "05-prototyping-basics.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Components & variants"],
+        "upNext": "design-systems-101",
+        "related": ["testing-early", "components-and-variants"],
+        "youllNeed": "A free Figma account; a friend to test with.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Figma prototyping basics: link screens into a clickable flow",
+        "seoDescription": "Learn how to link screens in a Figma prototype with triggers, actions and animations, and why a prototype is for testing flow, not showing off.",
+        "quiz": [
+          {
+            "question": "What's a prototype mainly for?",
+            "options": [
+              "Showing off animations",
+              "Letting people try a flow before it's built",
+              "Replacing developers",
+              "Exporting images"
+            ],
+            "answerIndex": 1,
+            "why": "Prototypes are for learning how a design works for people."
+          },
+          {
+            "question": "What is a trigger?",
+            "options": [
+              "A mistake",
+              "What the person does to start a change, like a click",
+              "A color",
+              "A plugin"
+            ],
+            "answerIndex": 1,
+            "why": "Triggers start interactions. Actions define what happens next."
+          },
+          {
+            "question": "How does Smart animate decide what to animate?",
+            "options": [
+              "Randomly",
+              "By matching layers with the same name across frames",
+              "By color",
+              "By size only"
+            ],
+            "answerIndex": 1,
+            "why": "Consistent layer names are what let it connect elements between screens."
+          },
+          {
+            "question": "What should you prototype?",
+            "options": [
+              "Everything",
+              "Only the home screen",
+              "The flow you need to test",
+              "Only animations"
+            ],
+            "answerIndex": 2,
+            "why": "Focus on what answers your question."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "design-systems-101",
+      "position": 31,
+      "title": "Design systems 101",
+      "description": "A design system is a shared kit of components, styles and rules, so a team can build consistently and faster. Start small.",
+      "difficulty": "advanced",
+      "estimatedMinutes": 35,
+      "file": "06-design-systems-101.md",
+      "metadata": {
+        "level": "Advanced",
+        "timeMinutes": 35,
+        "needs": ["Styles & variables"],
+        "upNext": "accessibility-basics",
+        "related": ["components-and-variants", "styles-and-variables"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Design systems 101: what they are and how to start small",
+        "seoDescription": "A design system is a shared kit of components, styles and rules. Learn what's inside one, when to build one, and how to start with a mini system.",
+        "quiz": [
+          {
+            "question": "What is a design token?",
+            "options": [
+              "A coin",
+              "A named design decision, like a color or spacing value",
+              "A plugin",
+              "A font"
+            ],
+            "answerIndex": 1,
+            "why": "Tokens give design decisions names so they can be reused consistently."
+          },
+          {
+            "question": "Which is a cost of a design system?",
+            "options": [
+              "None",
+              "It needs ongoing maintenance",
+              "It slows every project",
+              "It removes creativity"
+            ],
+            "answerIndex": 1,
+            "why": "Systems need care or they drift out of date."
+          },
+          {
+            "question": "What does a mini system for a solo project need?",
+            "options": [
+              "200 components",
+              "A small set of tokens and a handful of well-built components",
+              "Nothing at all",
+              "A team of ten"
+            ],
+            "answerIndex": 1,
+            "why": "Small and used beats big and abandoned."
+          },
+          {
+            "question": "What belongs in guidelines?",
+            "options": [
+              "Only colors",
+              "When to use each piece, with do and don't examples and accessibility notes",
+              "Developer code only",
+              "Logos"
+            ],
+            "answerIndex": 1,
+            "why": "Guidelines help others use the system correctly."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "accessibility-basics",
+      "position": 32,
+      "title": "Accessibility basics",
+      "description": "Accessible design works for more people in more situations: tired eyes, bright sunlight, one hand, a screen reader, a keyboard. Build it in from the start.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "07-accessibility-basics.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Color & contrast"],
+        "upNext": "handoff-to-developers",
+        "related": ["color-and-contrast", "mobile-vs-desktop-patterns"],
+        "youllNeed": "A free Figma account; your keyboard.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 12 months (ideas change slowly; tool names every 6 months)",
+        "seoTitle": "Accessibility basics for designers: design that works for more people",
+        "seoDescription": "Accessible design works for more people in more situations. Learn the four principles, a practical checklist, and quick ways to test your designs.",
+        "quiz": [
+          {
+            "question": "What does POUR stand for?",
+            "options": [
+              "Plan, Observe, Understand, Refine",
+              "Perceivable, Operable, Understandable, Robust",
+              "Print, Open, Use, Review",
+              "Pixels, Ordering, Usability, Results"
+            ],
+            "answerIndex": 1,
+            "why": "These are the four principles WCAG is organized around."
+          },
+          {
+            "question": "Why shouldn't placeholder text be your only label?",
+            "options": [
+              "It's too small",
+              "It disappears when typing, leaving people unsure what the field is",
+              "It's ugly",
+              "It's slower"
+            ],
+            "answerIndex": 1,
+            "why": "Visible labels stay put and are easier for everyone, including screen reader users."
+          },
+          {
+            "question": "A user navigates with a keyboard. What do they need?",
+            "options": [
+              "Nothing special",
+              "A visible focus state showing where they are",
+              "A bigger screen",
+              "Louder sounds"
+            ],
+            "answerIndex": 1,
+            "why": "Without a focus indicator, they can't tell what's selected."
+          },
+          {
+            "question": "Who benefits from accessible design?",
+            "options": [
+              "Only people with disabilities",
+              "Only older people",
+              "A wide range of people in many situations",
+              "Only developers"
+            ],
+            "answerIndex": 2,
+            "why": "Ramps, captions and clear contrast help many beyond the original group."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "handoff-to-developers",
+      "position": 33,
+      "title": "Handoff to developers",
+      "description": "Handoff is a conversation, not a file transfer. Give developers what they need, early, and keep talking.",
+      "difficulty": "advanced",
+      "estimatedMinutes": 25,
+      "file": "08-handoff-to-developers.md",
+      "metadata": {
+        "level": "Advanced",
+        "timeMinutes": 25,
+        "needs": ["Design systems 101"],
+        "upNext": null,
+        "upNextLabel": "Stage 06, Pick a project worth showing",
+        "related": ["design-systems-101", "accessibility-basics"],
+        "youllNeed": "A free Figma account; a developer friend if you can find one.",
+        "practise": "Build a mini component library (Stage 05 checkpoint).",
+        "reviewCadence": "every 6 months (tool-specific page)",
+        "seoTitle": "Design handoff to developers: what to include and how to talk",
+        "seoDescription": "Handoff is a conversation, not a file transfer. Learn what developers need, how to prepare your Figma file, and how to keep working together.",
+        "quiz": [
+          {
+            "question": "What's handoff really?",
+            "options": [
+              "Sending a file",
+              "A conversation between designer and developer",
+              "A final export",
+              "A legal step"
+            ],
+            "answerIndex": 1,
+            "why": "Good handoff keeps talking, before, during and after the build."
+          },
+          {
+            "question": "Which is a state developers need to see?",
+            "options": [
+              "Only default",
+              "Only success",
+              "Default, hover, focus, disabled, loading, empty and error",
+              "Only hover"
+            ],
+            "answerIndex": 2,
+            "why": "If a state isn't designed, someone has to guess it."
+          },
+          {
+            "question": "When should you first talk to developers?",
+            "options": [
+              "After launch",
+              "Never",
+              "Early, before they start building",
+              "Only when there's a bug"
+            ],
+            "answerIndex": 2,
+            "why": "Early conversation catches problems while they're cheap."
+          },
+          {
+            "question": "Why agree on names with developers?",
+            "options": [
+              "It's polite",
+              "So the design and code refer to the same things and stay in sync",
+              "It saves money",
+              "It's required"
+            ],
+            "answerIndex": 1,
+            "why": "Shared names make everything easier to find and change."
+          }
+        ]
+      }
+    }
+  ]
+}

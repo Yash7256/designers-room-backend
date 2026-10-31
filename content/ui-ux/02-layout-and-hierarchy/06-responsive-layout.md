@@ -4,205 +4,66 @@
 
 ## TL;DR
 
-Responsive layout is not one design squeezed into every screen. It is one system that reflows, reprioritises and stays usable as the space changes.
+A responsive layout bends to fit any screen instead of breaking. Design for the smallest screen first, then let it grow.
 
 ---
 
-## Chapter 1: Responsive is not "make it smaller"
+## Chapter 1: One page, many screens
 
-The first instinct is to design for desktop, then shrink everything until it fits on a phone. That produces tiny text, cramped buttons and layouts that technically fit but practically do not work.
+Think about everywhere your design might be opened: a small phone, a big phone, a laptop, a tablet, a cousin's ancient desktop. A layout that only works at one size is like a glass that only holds one drink.
 
-Responsive design is about rearranging and reprioritising. The content stays the same. The layout changes to give that content the room it needs.
+Responsive design is the opposite. It's more like water: it takes the shape of whatever container it's in. The term "responsive web design" was introduced by Ethan Marcotte in 2010, and it became the standard way to build for the web.
 
-### The screen is not the design
-
-A screen is just a window into your layout. The same content might appear as:
-
-- Three columns on a wide desktop.
-- Two columns on a tablet.
-- One stacked column on a phone.
-
-The person is not using "a mobile version". They are using your product in a narrower space, possibly with a thumb, possibly in bright sunlight, possibly while distracted.
-
-### Start with the content
-
-Before you draw boxes, list what the screen must communicate and what the person must be able to do.
-
-Then rank it:
-
-1. What must be visible immediately?
-2. What can come after a scroll?
-3. What can collapse, move or hide on smaller screens?
-
-If everything is equally important, you do not have a responsive problem. You have a priority problem.
-
-### Mobile first is a useful habit
-
-"Mobile first" means starting with the smallest useful layout. It forces you to decide what matters, because there is no room for everything.
-
-You do not have to work this way forever. But trying it once will expose how much of a desktop layout is optional.
+**In real life:** Opening a restaurant's website on your phone and finding a tiny PDF menu you have to pinch and zoom. That's a layout that didn't bend.
 
 ---
 
-## Chapter 2: Breakpoints and constraints
+## Chapter 2: Three ideas that make it work
 
-A breakpoint is the width where the layout changes. It is not a device model. It is the point where the current arrangement stops working.
+- **Fluid layouts:** Sizes based on proportions of the screen, not fixed pixels, so things stretch and shrink smoothly.
+- **Flexible media:** Images and video that scale down instead of overflowing.
+- **Breakpoints:** Screen widths where the layout changes, like one column on a phone and three on a desktop.
 
-### Let the content choose the breakpoint
-
-A common set of starting points is 640, 768, 1024 and 1280 pixels. Those are conventions, not laws. The right breakpoint is the width where:
-
-- A line of text becomes too long.
-- A card row becomes too cramped.
-- A sidebar stops fitting.
-- A button becomes hard to reach.
-
-Resize the canvas slowly and watch for the moment the layout starts to strain. That is your breakpoint.
-
-### Use the grid, then change the grid
-
-On desktop, a 12-column grid is a common choice. On a phone, 4 columns is a common choice. The grid itself can change at a breakpoint.
-
-What should not change is the logic. Gutters stay consistent. Margins stay intentional. Content still snaps to columns instead of floating by eye.
-
-### Constraints and auto layout are your friends
-
-In Figma, constraints control how a layer behaves when its frame resizes. Auto layout controls how a group of elements stacks, wraps and spaces itself.
-
-Learn a few rules and you stop redrawing every screen:
-
-- Pin navigation to the top or bottom.
-- Let text wrap instead of shrinking.
-- Let images scale within a frame.
-- Let card rows wrap when they run out of room.
-- Let a sidebar collapse into a stacked section.
-
-The goal is a file that behaves like the real thing. If resizing a frame breaks the design, the design is not responsive yet.
-
-### Do not design for one exact phone
-
-There are too many screen sizes to design for each one. Design for ranges. Test at a narrow width, a middle width and a wide width. If those work, the in-between sizes usually work too.
+Common breakpoints you'll hear about sit around phone, tablet and desktop widths, but they're conventions, not laws. A better rule: when your layout starts looking bad as you widen it, that's where a breakpoint belongs.
 
 ---
 
-## Chapter 3: Reflow patterns
+## Chapter 3: Mobile first
 
-Responsive layout is mostly a set of reflow patterns. Learn the common ones and you can adapt almost any screen.
+Mobile first means you design the phone version before the desktop version. Why? Small screens force you to decide what really matters. It's much easier to add things as space grows than to squeeze a desktop layout into a phone.
 
-### Stack columns
-
-The most common pattern: a horizontal row becomes a vertical stack. Three feature cards become three stacked cards. A main column and sidebar become one column.
-
-Stacking works because it preserves the content and gives each item the full width. It is usually better than shrinking columns until they are unreadable.
-
-### Reprioritise, do not just move
-
-When a sidebar moves below the main content, ask whether it still belongs there. On mobile, the thing that was secondary on desktop might be the first thing the person needs.
-
-Order is part of responsive design. Do not preserve the desktop order out of habit.
-
-### Change the navigation
-
-Desktop navigation might be a horizontal bar or a sidebar. On mobile, it might become a bottom bar, a menu button or a single primary action.
-
-The right choice depends on how often the navigation is used. A bottom bar is easy to reach with a thumb. A menu hides options until they are needed.
-
-### Turn tables into cards
-
-A wide table rarely works on a phone. Instead of forcing horizontal scrolling, consider turning each row into a card with labelled fields.
-
-The person loses the ability to compare columns at a glance, but gains the ability to read one record comfortably. That is often the better trade.
-
-### Keep text readable
-
-Do not shrink body text to make a layout fit. Let it wrap, reduce the number of columns, or move content below. A responsive layout should not require a magnifying glass.
-
-### Protect touch targets
-
-A mouse can hit a 20-pixel link. A thumb cannot reliably hit one. Give interactive elements enough size and spacing, especially on small screens.
-
-If two actions are close together, increase the gap. A mis-tap is a design problem, not a user problem.
+1. **List what matters most.** What must be on this screen? Everything else is optional.
+2. **Design the phone layout in one column.** Top to bottom, in order of importance.
+3. **Widen it.** At a wider size, add columns and bring in the extras.
+4. **Set a maximum width.** On very wide screens, don't let text stretch across the whole page. Remember line length from the Typography page.
 
 ---
 
-## Chapter 4: Test across sizes and states
+## Chapter 4: What usually changes between sizes
 
-A responsive layout is not finished when it looks good at three widths. It is finished when it survives real content and real conditions.
+| | Phone | Tablet | Desktop |
+| --- | --- | --- | --- |
+| Columns | Often 1 | Often 2 | Often 3 or more |
+| Navigation | Bottom bar or menu icon | Either | Top bar or side bar |
+| Input | Touch, so bigger tap targets | Touch | Mouse, so hover is possible |
+| Content | Only what matters most | A bit more | Room for extras |
 
-### Resize slowly
-
-Drag the frame from wide to narrow and back. Watch for:
-
-- Text that overflows.
-- Cards that squash.
-- Buttons that wrap badly.
-- Images that distort.
-- Horizontal scrolling.
-- Elements that overlap.
-
-The awkward middle widths are where most responsive bugs live.
-
-### Test the longest content
-
-Real content is messier than placeholder text. Test:
-
-- The longest product name.
-- The longest error message.
-- A name with no spaces.
-- A locale with longer words.
-- An empty state.
-- A loading state.
-
-A layout that only works with perfect copy is not a layout. It is a demo.
-
-### Test zoom and text size
-
-Zoom the browser to 200%. Check that content still reflows and that nothing important disappears.
-
-People zoom for many reasons: low vision, small screens, tired eyes. A layout that breaks at 200% is excluding them.
-
-### Test with a keyboard and a thumb
-
-Tab through the interface. Can you see where focus is? Can you reach every action?
-
-Then use it one-handed on a phone. Are the main actions within reach? Are destructive actions too easy to hit by accident?
-
-### Test the states, not just the happy path
-
-Responsive design includes:
-
-- Empty states.
-- Error states.
-- Long lists.
-- Loading states.
-- Modals and menus.
-- Dark mode, if you support it.
-
-A screen that works only with ideal data is not done. The edges are where responsive layout earns its keep.
+These are common patterns, not rules. Your content and your users decide the final answer.
 
 ---
 
 ## Common mistakes
 
-**Mistake 1: Designing desktop first, then squeezing.** Shrinking a desktop layout produces tiny text and cramped controls. Reflow instead.
-
-**Mistake 2: Choosing breakpoints from a device list only.** Devices change. Choose breakpoints where your layout actually breaks.
-
-**Mistake 3: Hiding important actions on mobile.** Mobile is not a lesser experience. If the action matters on desktop, it probably matters on a phone.
-
-**Mistake 4: Touch targets that are too small.** A thumb is not a mouse. Give interactive elements enough size and space.
-
-**Mistake 5: Only testing the perfect content.** Long labels, empty states and errors are part of the layout. Test them before you call it done.
+- Designing for desktop only and shrinking it down
+- Fixed pixel widths everywhere
+- Hiding content on mobile because it's inconvenient to design
+- Testing only on your own phone
 
 ---
 
-## Try it
+## Try it (30 min)
 
-Take one desktop screen you have designed or a screenshot of an app.
-
-- [ ] Sketch a 375-pixel-wide version and a 768-pixel-wide version.
-- [ ] Change at least two layout patterns, not just the width.
-- [ ] Check the longest label, the empty state and one error state.
-- [ ] Test at 200% zoom and look for overlap or horizontal scrolling.
-
-Then compare the three versions. The content should feel like the same product, not three different products that happen to share a logo.
+- [ ] In Figma, make a frame 390 wide and design a simple list of three cards in one column.
+- [ ] Duplicate it, resize the frame to 1440 wide, and rearrange the cards into three columns.
+- [ ] Set a maximum width for the text inside each card.
+- [ ] Write down what you changed between the two sizes and why.

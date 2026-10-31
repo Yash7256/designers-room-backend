@@ -1,0 +1,388 @@
+{
+  "roadmapSlug": "ui-ux-designer",
+  "stage": 4,
+  "items": [
+    {
+      "slug": "user-flows",
+      "position": 20,
+      "title": "User flows",
+      "description": "A user flow is a map of the steps someone takes to get something done. Draw it before you draw any screens.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "01-user-flows.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Problem statements & HMW"],
+        "upNext": "information-architecture",
+        "related": ["problem-statements-and-hmw", "low-fi-wireframes"],
+        "youllNeed": "Paper or a free Figma or FigJam file.",
+        "practise": "Wireframe a 5-screen flow (Stage 04 checkpoint).",
+        "seoTitle": "User flows for beginners: map the steps before you design screens",
+        "seoDescription": "A user flow is a map of the steps someone takes to get something done. Learn the basic shapes, how to draw one, and why error paths matter.",
+        "quiz": [
+          {
+            "question": "What is the \"happy path\"?",
+            "options": [
+              "The shortest flow",
+              "The flow where everything goes right",
+              "The most fun flow",
+              "The final design"
+            ],
+            "answerIndex": 1,
+            "why": "It's the ideal route. The rest of the work is dealing with what happens when things don't go right."
+          },
+          {
+            "question": "Which shape is commonly used for a decision?",
+            "options": ["Circle", "Star", "Diamond", "Triangle"],
+            "answerIndex": 2,
+            "why": "Flowcharts use diamonds for questions with different outcomes."
+          },
+          {
+            "question": "Why do error paths matter?",
+            "options": [
+              "They look neat",
+              "Many real problems happen when something fails, and people still need a way forward",
+              "Developers asked for them",
+              "They don't matter"
+            ],
+            "answerIndex": 1,
+            "why": "A flow that only works when everything goes right will fail real people."
+          },
+          {
+            "question": "What should you pick before drawing a flow?",
+            "options": [
+              "A color scheme",
+              "A font",
+              "One clear user goal",
+              "A logo"
+            ],
+            "answerIndex": 2,
+            "why": "One goal keeps the flow clear and small."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "information-architecture",
+      "position": 21,
+      "title": "Information architecture",
+      "description": "Information architecture is how you organize and name things so people can find them without thinking.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "02-information-architecture.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["User flows"],
+        "upNext": "sketching-ideas-fast",
+        "related": ["user-flows", "testing-early"],
+        "youllNeed": "Sticky notes or index cards.",
+        "practise": "Wireframe a 5-screen flow (Stage 04 checkpoint).",
+        "seoTitle": "Information architecture: organize things so people find them",
+        "seoDescription": "Information architecture is how you group, name and structure content so people find it without thinking. Learn card sorting and sitemaps.",
+        "quiz": [
+          {
+            "question": "What is information architecture?",
+            "options": [
+              "The app's color scheme",
+              "How content is organized, named and connected so people can find it",
+              "The code structure",
+              "A building design"
+            ],
+            "answerIndex": 1,
+            "why": "It's the structure that helps people find what they need."
+          },
+          {
+            "question": "In an \"open\" card sort, who creates the group names?",
+            "options": ["The designer", "The developers", "The participants", "Nobody"],
+            "answerIndex": 2,
+            "why": "Open sorts show how people naturally group things. In closed sorts, you supply the names."
+          },
+          {
+            "question": "Whose words should you use for labels?",
+            "options": ["Your company's", "Your users'", "The CEO's", "Technical terms"],
+            "answerIndex": 1,
+            "why": "Labels work when people recognize them."
+          },
+          {
+            "question": "People can't find a feature. What's the likely IA problem?",
+            "options": [
+              "The color",
+              "It's grouped or labeled in a way that doesn't match how people think",
+              "The font",
+              "The screen size"
+            ],
+            "answerIndex": 1,
+            "why": "Findability depends on structure and labels."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "sketching-ideas-fast",
+      "position": 22,
+      "title": "Sketching ideas fast",
+      "description": "Your first idea is rarely your best. Sketch lots of rough ideas quickly, then pick the best one.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "03-sketching-ideas-fast.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": [],
+        "upNext": "low-fi-wireframes",
+        "related": ["the-design-process", "problem-statements-and-hmw"],
+        "youllNeed": "Paper, a pen and a timer.",
+        "practise": "Wireframe a 5-screen flow (Stage 04 checkpoint).",
+        "seoTitle": "Sketching ideas fast: why eight bad ideas beat one precious one",
+        "seoDescription": "Your first idea is rarely your best. Learn a fast sketching drill, why paper beats Figma at this stage, and how to choose without ego.",
+        "quiz": [
+          {
+            "question": "Why sketch many ideas instead of one?",
+            "options": [
+              "To fill the page",
+              "The first idea is rarely the best, and the better ones come later",
+              "It's required",
+              "To use more paper"
+            ],
+            "answerIndex": 1,
+            "why": "Quantity helps you get past the obvious."
+          },
+          {
+            "question": "Why use paper at this stage?",
+            "options": [
+              "Figma is banned",
+              "Paper looks better",
+              "It's fast and cheap, so you're not attached to what you draw",
+              "Clients prefer it"
+            ],
+            "answerIndex": 2,
+            "why": "Low cost means you can throw ideas away freely."
+          },
+          {
+            "question": "What should you compare your sketches against?",
+            "options": [
+              "Which looks nicest",
+              "Which best helps your user with the problem",
+              "Which is easiest to draw",
+              "Which is longest"
+            ],
+            "answerIndex": 1,
+            "why": "The goal is solving the problem, not drawing."
+          },
+          {
+            "question": "You can't draw well. Should you skip sketching?",
+            "options": [
+              "Yes",
+              "No, boxes and stick figures are fine",
+              "Only with a tablet",
+              "Ask someone else to do it"
+            ],
+            "answerIndex": 1,
+            "why": "A sketch only has to show the idea."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "low-fi-wireframes",
+      "position": 23,
+      "title": "Low-fi wireframes",
+      "description": "A low-fi wireframe is a plain, grey-box blueprint of a screen. It's for deciding what goes where, not how it looks.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 30,
+      "file": "04-low-fi-wireframes.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 30,
+        "needs": ["Sketching ideas fast", "User flows"],
+        "upNext": "mobile-vs-desktop-patterns",
+        "related": ["visual-hierarchy", "sketching-ideas-fast"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Wireframe a 5-screen flow (Stage 04 checkpoint).",
+        "seoTitle": "Low-fi wireframes: the floor plan of your screen",
+        "seoDescription": "A low-fi wireframe is a plain, grey-box blueprint of a screen. Learn what to include, what to leave out, and how to build one in Figma.",
+        "quiz": [
+          {
+            "question": "What is a low-fi wireframe for?",
+            "options": [
+              "Showing the final look",
+              "Deciding what goes where before styling",
+              "Choosing colors",
+              "Impressing clients"
+            ],
+            "answerIndex": 1,
+            "why": "It keeps attention on structure and hierarchy."
+          },
+          {
+            "question": "Which belongs in a low-fi wireframe?",
+            "options": [
+              "Final photos",
+              "Brand colors",
+              "Layout and real labels",
+              "Animations"
+            ],
+            "answerIndex": 2,
+            "why": "Structure and words matter. Style comes later."
+          },
+          {
+            "question": "Why use real labels instead of lorem ipsum?",
+            "options": [
+              "It's faster",
+              "Placeholder text can hide problems with wording and space",
+              "Figma requires it",
+              "It looks better"
+            ],
+            "answerIndex": 1,
+            "why": "Real words show if a button label is too long or unclear."
+          },
+          {
+            "question": "Which states should you include besides the perfect-data screen?",
+            "options": [
+              "None",
+              "Empty, loading and error",
+              "Only success",
+              "Dark mode only"
+            ],
+            "answerIndex": 1,
+            "why": "People will see these states, so they need to be planned."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "mobile-vs-desktop-patterns",
+      "position": 24,
+      "title": "Mobile vs desktop patterns",
+      "description": "People hold phones with thumbs and use desktops with mice and keyboards. Good patterns respect that.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "05-mobile-vs-desktop-patterns.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Low-fi wireframes"],
+        "upNext": "testing-early",
+        "related": ["responsive-layout", "low-fi-wireframes"],
+        "youllNeed": "A free Figma account; your phone.",
+        "practise": "Wireframe a 5-screen flow (Stage 04 checkpoint).",
+        "seoTitle": "Mobile vs desktop design patterns: thumbs, mice and screens",
+        "seoDescription": "People hold phones with thumbs and use desktops with mice and keyboards. Learn the common patterns for each and how to design for both.",
+        "quiz": [
+          {
+            "question": "Why do many phone apps put navigation at the bottom?",
+            "options": [
+              "It's more fashionable",
+              "Thumbs reach the bottom easily when holding a phone",
+              "Desktops require it",
+              "It saves code"
+            ],
+            "answerIndex": 1,
+            "why": "The bottom of the screen is easiest for a thumb to reach."
+          },
+          {
+            "question": "What should you avoid with hover?",
+            "options": [
+              "Using it at all",
+              "Hiding essential actions behind it",
+              "Showing extra details",
+              "Using it on desktop"
+            ],
+            "answerIndex": 1,
+            "why": "Phones can't hover, and some people don't use a mouse."
+          },
+          {
+            "question": "Where can you find free, official guidance on platform patterns?",
+            "options": [
+              "Social media",
+              "Random blogs only",
+              "Apple's Human Interface Guidelines and Google's Material Design",
+              "Nowhere"
+            ],
+            "answerIndex": 2,
+            "why": "Both are published and kept up to date by the platform makers."
+          },
+          {
+            "question": "On a wider screen, what should you do with a phone layout?",
+            "options": [
+              "Stretch it",
+              "Rearrange it to use the space well",
+              "Hide half of it",
+              "Make everything bigger"
+            ],
+            "answerIndex": 1,
+            "why": "Stretching leaves awkward gaps and very long lines."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "testing-early",
+      "position": 25,
+      "title": "Testing early",
+      "description": "Test your rough wireframes with a few real people before you build anything. Watching a handful of people struggle teaches more than guessing for weeks.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "06-testing-early.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Low-fi wireframes"],
+        "upNext": null,
+        "upNextLabel": "Stage 05, Frames & auto layout",
+        "related": ["user-interviews", "low-fi-wireframes"],
+        "youllNeed": "A friend or two; a clickable Figma prototype or paper screens.",
+        "practise": "Wireframe a 5-screen flow (Stage 04 checkpoint).",
+        "seoTitle": "Testing early: how to usability test a rough wireframe",
+        "seoDescription": "Test rough wireframes with a few real people before you build anything. Learn how to run a simple usability test and turn findings into fixes.",
+        "quiz": [
+          {
+            "question": "When should you start testing?",
+            "options": [
+              "After launch",
+              "When it's polished",
+              "Early, with rough wireframes",
+              "Never"
+            ],
+            "answerIndex": 2,
+            "why": "Fixing a rough sketch is far cheaper than fixing built code."
+          },
+          {
+            "question": "A person gets stuck during a test. What do you do?",
+            "options": [
+              "Tell them where to tap",
+              "Stay quiet and note where they got stuck",
+              "End the test",
+              "Explain the design"
+            ],
+            "answerIndex": 1,
+            "why": "Where people get stuck is exactly what you're there to learn."
+          },
+          {
+            "question": "What can a small test with about five people show you?",
+            "options": [
+              "Every problem",
+              "The biggest problems, not necessarily all of them",
+              "Nothing useful",
+              "A final answer"
+            ],
+            "answerIndex": 1,
+            "why": "A small group is good at spotting major issues, but it doesn't prove everything."
+          },
+          {
+            "question": "How should you prioritize issues?",
+            "options": [
+              "By which was said loudest",
+              "By how many people hit it and how much it blocks the goal",
+              "Alphabetically",
+              "By how easy it is to fix"
+            ],
+            "answerIndex": 1,
+            "why": "Fix what blocks people most first."
+          }
+        ]
+      }
+    }
+  ]
+}

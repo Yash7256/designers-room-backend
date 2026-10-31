@@ -274,50 +274,40 @@
         "timeMinutes": 25,
         "needs": ["Visual hierarchy"],
         "upNext": "responsive-layout",
-        "related": ["visual-hierarchy", "responsive-layout"],
-        "youllNeed": "A free Figma account and a contrast checker in your browser or as a plugin.",
+        "related": ["visual-hierarchy", "accessibility-basics"],
+        "youllNeed": "A free Figma account and a contrast checker (free online tools or a Figma plugin).",
         "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
-        "seoTitle": "Color and contrast in UI design: a practical guide",
-        "seoDescription": "Build a small, functional palette and check every text and background pair for contrast. A beginner-friendly guide to using color with restraint.",
+        "seoTitle": "Color and contrast in UI design: a beginner's guide",
+        "seoDescription": "Give every color a job, keep your palette small, and make text readable for everyone. Learn contrast ratios, status colors and why color alone isn't enough.",
         "quiz": [
           {
-            "question": "What should an accent color usually be reserved for?",
-            "options": [
-              "Every heading",
-              "The most important action or state",
-              "Page backgrounds",
-              "All body text"
-            ],
-            "answerIndex": 1,
-            "why": "An accent works because it is rare. If it is everywhere, it stops pointing at anything."
-          },
-          {
-            "question": "What is a common minimum contrast ratio for normal body text under WCAG AA?",
-            "options": ["1.5:1", "3:1", "4.5:1", "10:1"],
+            "question": "At the AA level, what's the minimum contrast ratio for normal text?",
+            "options": ["2 to 1", "3 to 1", "4.5 to 1", "10 to 1"],
             "answerIndex": 2,
-            "why": "WCAG AA asks for 4.5:1 for normal text, and 3:1 for large text and interface components."
+            "why": "WCAG's AA level asks for at least 4.5 to 1 for normal-sized text and 3 to 1 for large text."
           },
           {
-            "question": "Why is color alone a weak way to signal meaning?",
+            "question": "A form field turns red on error, with no other change. What's the problem?",
             "options": [
-              "It loads slowly",
-              "Some people cannot distinguish the colors",
-              "It is always ugly",
-              "It uses too much ink"
+              "Red is too bright",
+              "Not everyone can tell color changes apart",
+              "Forms shouldn't have errors",
+              "Nothing, it's fine"
             ],
             "answerIndex": 1,
-            "why": "Color vision varies. Pair color with text, an icon or a shape so the meaning survives."
+            "why": "Pairing color with an icon and a message means everyone gets the signal."
           },
           {
-            "question": "What is a good starting point for a UI palette?",
-            "options": [
-              "Ten bright accents",
-              "Neutral surfaces plus one accent and a few semantic colors",
-              "Only black and white",
-              "A different color for every screen"
-            ],
-            "answerIndex": 1,
-            "why": "Neutrals carry most of the interface, one accent directs attention, and semantic colors cover success, warning and error."
+            "question": "Most of a screen should be...",
+            "options": ["Bright accent colors", "Gradients", "Neutrals", "Status colors"],
+            "answerIndex": 2,
+            "why": "A calm neutral base lets the accent do its job."
+          },
+          {
+            "question": "What should you do before falling in love with a color combination?",
+            "options": ["Post it online", "Add more colors", "Check the contrast", "Make it brighter"],
+            "answerIndex": 2,
+            "why": "It's easier to adjust early than to redesign after everything is built."
           }
         ]
       }
@@ -335,56 +325,56 @@
         "timeMinutes": 30,
         "needs": ["Grids & spacing"],
         "upNext": null,
-        "upNextLabel": "Who are you designing for? (Stage 03, coming soon)",
-        "related": ["grids-and-spacing", "color-and-contrast"],
-        "youllNeed": "A free Figma account and a browser you can resize.",
+        "upNextLabel": "Stage 03, Who are you designing for?",
+        "related": ["grids-and-spacing", "frames-auto-layout"],
+        "youllNeed": "A free Figma account.",
         "practise": "Fix a messy screen with 3 text styles (Stage 02 checkpoint).",
-        "seoTitle": "Responsive layout basics: design for every screen size",
-        "seoDescription": "Learn how to design layouts that adapt from phone to desktop. Breakpoints, reflow patterns, constraints and the checks that catch broken screens.",
+        "seoTitle": "Responsive layout: design that fits every screen",
+        "seoDescription": "Learn what responsive layout means, why mobile-first works, and how fluid layouts and breakpoints help your design fit phones, tablets and desktops.",
         "quiz": [
           {
-            "question": "What does responsive layout mean?",
+            "question": "What does \"mobile first\" mean?",
             "options": [
-              "Making the same layout smaller",
-              "Adapting the layout and content to the space available",
-              "Using only mobile designs",
-              "Loading faster on phones"
+              "Only designing for phones",
+              "Designing the small screen first, then expanding",
+              "Using only mobile apps",
+              "Making phones faster"
             ],
             "answerIndex": 1,
-            "why": "Responsive design changes arrangement and priority, not just scale."
+            "why": "Starting small forces you to prioritize, then you add as space grows."
           },
           {
-            "question": "Where should breakpoints come from?",
+            "question": "What is a breakpoint?",
             "options": [
-              "A list of popular devices only",
-              "The points where your layout stops working",
-              "Random numbers",
-              "The brand colors"
+              "A design bug",
+              "A screen width where the layout changes",
+              "A type of font",
+              "A color setting"
             ],
             "answerIndex": 1,
-            "why": "Content and layout decide breakpoints. Devices change; the places your design breaks are more stable."
+            "why": "Breakpoints mark where the layout needs to switch to look good."
           },
           {
-            "question": "What usually happens to a multi-column layout on a narrow screen?",
+            "question": "Why set a maximum width on a desktop layout?",
             "options": [
-              "Columns get narrower forever",
-              "Columns stack into one column",
-              "Text gets smaller",
-              "The page is hidden"
+              "To save memory",
+              "So text lines don't become too long to read comfortably",
+              "Because phones require it",
+              "To make pages shorter"
             ],
             "answerIndex": 1,
-            "why": "Stacking keeps content readable and gives each item enough room to be used."
+            "why": "Very long lines are tiring to read, even on a big screen."
           },
           {
-            "question": "Why test a layout at 200% zoom?",
+            "question": "What should decide where a breakpoint goes?",
             "options": [
-              "To check the animation",
-              "To make sure content and actions still work for low-vision users",
-              "To see the code",
-              "To save time"
+              "A famous device list",
+              "The newest phone",
+              "Where your content starts looking bad",
+              "Your favorite number"
             ],
-            "answerIndex": 1,
-            "why": "Zoom exposes layouts that only work at one size. Nothing important should disappear or overlap."
+            "answerIndex": 2,
+            "why": "Common breakpoints are conventions. Your content is the real guide."
           }
         ]
       }
