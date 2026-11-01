@@ -1,0 +1,328 @@
+{
+  "roadmapSlug": "ui-ux-designer",
+  "stage": 6,
+  "items": [
+    {
+      "slug": "pick-a-project-worth-showing",
+      "position": 34,
+      "title": "Pick a project worth showing",
+      "description": "One real project, finished well, beats five rushed ones. Pick the one that shows how you think.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 15,
+      "file": "01-pick-a-project-worth-showing.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 15,
+        "needs": [],
+        "upNext": "structure-a-case-study",
+        "related": ["seeing-like-a-designer", "the-design-process"],
+        "youllNeed": "Your notes and checkpoints from earlier stages.",
+        "practise": "Publish your first case study (Stage 06 checkpoint).",
+        "seoTitle": "How to pick a portfolio project that's worth showing",
+        "seoDescription": "One finished project beats five rushed ones. Learn how to choose a portfolio project, what makes one worth showing, and how to be honest about it.",
+        "quiz": [
+          {
+            "question": "What is a portfolio for?",
+            "options": [
+              "Showing everything you've made",
+              "Showing that you can think, decide and finish",
+              "Looking busy",
+              "Replacing a resume"
+            ],
+            "answerIndex": 1,
+            "why": "Quality of thinking matters more than quantity."
+          },
+          {
+            "question": "Which project is best to show?",
+            "options": [
+              "A pretty one with no story",
+              "A copy of a famous app",
+              "One with a real problem, a clear role and a process you can explain",
+              "The newest one"
+            ],
+            "answerIndex": 2,
+            "why": "You need something you can explain and defend."
+          },
+          {
+            "question": "Can you combine earlier checkpoints into one case study?",
+            "options": [
+              "No",
+              "Yes, research, flow, wireframes, testing and components can form one story",
+              "Only with a team",
+              "Only for graphic design"
+            ],
+            "answerIndex": 1,
+            "why": "Those checkpoints already cover most of a project's journey."
+          },
+          {
+            "question": "What should you do if a project was self-initiated?",
+            "options": ["Hide it", "Say so clearly", "Claim it was a client job", "Delete it"],
+            "answerIndex": 1,
+            "why": "Honesty builds trust, and it holds up under questions."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "structure-a-case-study",
+      "position": 35,
+      "title": "Structure a case study",
+      "description": "A case study is a story with a beginning, a middle and an end: the problem, what you did, and what happened.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 25,
+      "file": "02-structure-a-case-study.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 25,
+        "needs": ["Pick a project worth showing"],
+        "upNext": "write-the-story",
+        "related": ["the-design-process", "testing-early"],
+        "youllNeed": "Your project notes.",
+        "practise": "Publish your first case study (Stage 06 checkpoint).",
+        "seoTitle": "How to structure a UX case study: a simple skeleton",
+        "seoDescription": "A case study is a story, not a gallery of screens. Learn a simple eight-part structure, how to show decisions, and how to keep it easy to skim.",
+        "quiz": [
+          {
+            "question": "A case study is closest to...",
+            "options": [
+              "A photo album",
+              "A story with a problem, a process and an outcome",
+              "A resume",
+              "A list of tools"
+            ],
+            "answerIndex": 1,
+            "why": "People remember stories, and stories show your thinking."
+          },
+          {
+            "question": "What makes your thinking visible?",
+            "options": [
+              "More screens",
+              "Bigger images",
+              "Showing decisions and the reasons and evidence behind them",
+              "Fancy fonts"
+            ],
+            "answerIndex": 2,
+            "why": "Decisions show how you think."
+          },
+          {
+            "question": "Where should the summary go?",
+            "options": [
+              "At the very end",
+              "Near the top",
+              "Nowhere",
+              "Only on the resume"
+            ],
+            "answerIndex": 1,
+            "why": "Busy readers should understand the project quickly."
+          },
+          {
+            "question": "What should the end of a case study include?",
+            "options": [
+              "A thank-you note only",
+              "The outcome and what you learned",
+              "More screenshots",
+              "Nothing"
+            ],
+            "answerIndex": 1,
+            "why": "Reflection shows growth."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "write-the-story",
+      "position": 36,
+      "title": "Write the story",
+      "description": "Write like you're explaining it to a smart friend over chai. Short, specific and honest, with a point in every paragraph.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 30,
+      "file": "03-write-the-story.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 30,
+        "needs": ["Structure a case study"],
+        "upNext": "polish-your-visuals",
+        "related": ["giving-and-taking-critique", "structure-a-case-study"],
+        "youllNeed": "A text editor and a friend to read it.",
+        "practise": "Publish your first case study (Stage 06 checkpoint).",
+        "seoTitle": "Writing a case study: clear, specific and honest",
+        "seoDescription": "Write your case study like you're explaining it to a smart friend. Learn to be specific, write headings that carry the point, and edit ruthlessly.",
+        "quiz": [
+          {
+            "question": "Which sentence is better for a case study?",
+            "options": [
+              "I leveraged qualitative methods",
+              "I talked to five hostel students and noticed most screenshot their notes",
+              "Research was conducted",
+              "Users have pain points"
+            ],
+            "answerIndex": 1,
+            "why": "It's specific, plain and true."
+          },
+          {
+            "question": "When should you use a number?",
+            "options": ["Always", "When it sounds impressive", "Only when it's real", "Never"],
+            "answerIndex": 2,
+            "why": "An invented number damages trust."
+          },
+          {
+            "question": "Which heading carries the point?",
+            "options": [
+              "Research",
+              "Findings",
+              "Students screenshot notes because they can't find them",
+              "Part 3"
+            ],
+            "answerIndex": 2,
+            "why": "Skimmers get the insight just from the heading."
+          },
+          {
+            "question": "Why include what you'd do differently?",
+            "options": [
+              "It fills space",
+              "It shows honesty and growth",
+              "It's required",
+              "It makes you look bad"
+            ],
+            "answerIndex": 1,
+            "why": "Reflection reads as maturity."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "polish-your-visuals",
+      "position": 37,
+      "title": "Polish your visuals",
+      "description": "Good visuals make your thinking easier to see. Use clear hierarchy, consistent spacing and a few strong images instead of every screen.",
+      "difficulty": "intermediate",
+      "estimatedMinutes": 30,
+      "file": "04-polish-your-visuals.md",
+      "metadata": {
+        "level": "Intermediate",
+        "timeMinutes": 30,
+        "needs": ["Visual hierarchy"],
+        "upNext": "publish-and-share-it",
+        "related": ["visual-hierarchy", "accessibility-basics"],
+        "youllNeed": "A free Figma account.",
+        "practise": "Publish your first case study (Stage 06 checkpoint).",
+        "seoTitle": "Polishing portfolio visuals: make your thinking easy to see",
+        "seoDescription": "Good visuals make your thinking easier to follow. Learn how to choose images, keep things consistent, and show your work honestly.",
+        "quiz": [
+          {
+            "question": "What's the goal of polishing visuals?",
+            "options": [
+              "Hiding weak thinking",
+              "Making your thinking easy to see",
+              "Using more effects",
+              "Filling space"
+            ],
+            "answerIndex": 1,
+            "why": "Presentation should help people notice your work, not replace it."
+          },
+          {
+            "question": "How many images should you aim for?",
+            "options": [
+              "As many as you have",
+              "A focused set, around six to ten, that tells the story",
+              "Exactly one",
+              "None"
+            ],
+            "answerIndex": 1,
+            "why": "Fewer, stronger images are easier to follow."
+          },
+          {
+            "question": "Which is dishonest?",
+            "options": [
+              "Labeling something \"Concept\"",
+              "Using a device mockup",
+              "Placing a screenshot in a fake app store listing to suggest it launched",
+              "Crediting an illustrator"
+            ],
+            "answerIndex": 2,
+            "why": "It suggests something that isn't true."
+          },
+          {
+            "question": "What does the squint test show?",
+            "options": [
+              "The color palette",
+              "What stands out first on the page",
+              "The file size",
+              "The loading time"
+            ],
+            "answerIndex": 1,
+            "why": "It checks the hierarchy of your page."
+          }
+        ]
+      }
+    },
+    {
+      "slug": "publish-and-share-it",
+      "position": 38,
+      "title": "Publish & share it",
+      "description": "A link beats a PDF in a folder. Publish it somewhere people can open in one click, share it, and ask for real feedback.",
+      "difficulty": "beginner",
+      "estimatedMinutes": 20,
+      "file": "05-publish-and-share-it.md",
+      "metadata": {
+        "level": "Beginner",
+        "timeMinutes": 20,
+        "needs": ["Write the story"],
+        "upNext": null,
+        "upNextLabel": "You finished the roadmap",
+        "related": ["giving-and-taking-critique", "write-the-story"],
+        "youllNeed": "Your finished case study draft.",
+        "practise": "Publish your first case study (Stage 06 checkpoint).",
+        "reviewCadence": "every 6 months (platforms change)",
+        "seoTitle": "Publishing and sharing your design portfolio",
+        "seoDescription": "A link beats a PDF in a folder. Learn where to publish a case study, a checklist before you hit publish, and how to share it and ask for feedback.",
+        "quiz": [
+          {
+            "question": "Why publish a case study?",
+            "options": [
+              "To look busy",
+              "So people can actually see it, and so you can get feedback",
+              "It's mandatory",
+              "To finish the roadmap faster"
+            ],
+            "answerIndex": 1,
+            "why": "Work that nobody can see can't help you grow."
+          },
+          {
+            "question": "Which is better as your main version?",
+            "options": [
+              "A PDF in a folder",
+              "A link people can open in one click",
+              "A screenshot",
+              "A printed copy"
+            ],
+            "answerIndex": 1,
+            "why": "A link is easy to open and share. A PDF works well as an extra."
+          },
+          {
+            "question": "What should you check before publishing?",
+            "options": [
+              "Nothing",
+              "Links, phone view, typos, credits and private details",
+              "Only the title",
+              "Just the first image"
+            ],
+            "answerIndex": 1,
+            "why": "A quick check avoids easy mistakes."
+          },
+          {
+            "question": "How should you ask for feedback?",
+            "options": [
+              "\"Thoughts?\"",
+              "\"Be nice please\"",
+              "With a specific question, like \"Was the problem clear on the first screen?\"",
+              "Don't ask"
+            ],
+            "answerIndex": 2,
+            "why": "Specific questions get useful answers."
+          }
+        ]
+      }
+    }
+  ]
+}
