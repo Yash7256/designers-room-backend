@@ -10,7 +10,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly config: ConfigService) {
     const connectionString = this.config.getOrThrow<string>('DATABASE_URL');
-    const adapter = new PrismaPg({ connectionString });
+    const max = this.config.get<number>('DB_POOL_MAX', 3);
+    const adapter = new PrismaPg({ connectionString, max });
     this._client = new PrismaClient({ adapter });
   }
 

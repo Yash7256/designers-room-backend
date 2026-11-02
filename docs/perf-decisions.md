@@ -22,3 +22,12 @@ Behaviour trade-offs made during the speed pass.
   window (300 seconds) to propagate. The Vercel CDN now caches public guidebook
   responses instead of forwarding every request to the function.
 - **Unchanged:** route sets, response bodies, status codes, and auth policy.
+
+## C2 — Database pool size
+
+- **Behaviour:** each process now caps its PostgreSQL pool at `DB_POOL_MAX`
+  (default `3`, maximum `20`) instead of the pg default of `10` connections.
+- **Trade-off:** serverless instances use fewer database connections and are less
+  likely to exhaust Postgres under scale-out, at the cost of lower per-instance
+  query concurrency. Persistent servers can raise the value through configuration.
+- **Unchanged:** connection string handling, Prisma client behaviour, and schema.

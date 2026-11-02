@@ -14,6 +14,19 @@ const base = {
 };
 
 describe('envValidationSchema', () => {
+  it('defaults DB_POOL_MAX to 3', () => {
+    const { value, error } = envValidationSchema.validate(base);
+
+    expect(error).toBeUndefined();
+    expect(value.DB_POOL_MAX).toBe(3);
+  });
+
+  it('rejects DB_POOL_MAX above 20', () => {
+    const { error } = envValidationSchema.validate({ ...base, DB_POOL_MAX: 21 });
+
+    expect(error).toBeDefined();
+  });
+
   it('defaults COOKIE_SAMESITE to none in production', () => {
     const { value, error } = envValidationSchema.validate({ ...base, NODE_ENV: 'production' });
 

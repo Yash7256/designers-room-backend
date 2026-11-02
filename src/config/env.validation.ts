@@ -9,6 +9,7 @@ const onVercel = Boolean(process.env['VERCEL']);
 export const envValidationSchema = Joi.object({
   // Database
   DATABASE_URL: Joi.string().uri().required(),
+  DB_POOL_MAX: Joi.number().integer().min(1).max(20).default(3),
 
   // JWT / OAuth secrets
   JWT_SECRET: Joi.string().min(32).required(),
