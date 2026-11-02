@@ -67,6 +67,7 @@ export async function createNestApp(): Promise<INestApplication> {
   // Used only to preserve Google OAuth's short-lived anti-forgery state.
   // Application sessions remain the signed access token plus refresh cookie.
   app.use(
+    '/auth',
     cookieSession({
       name: 'oauth-state',
       keys: [config.get<string>('OAUTH_STATE_SECRET') || config.getOrThrow<string>('REFRESH_TOKEN_SECRET')],

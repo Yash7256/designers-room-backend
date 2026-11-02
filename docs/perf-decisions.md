@@ -31,3 +31,12 @@ Behaviour trade-offs made during the speed pass.
   likely to exhaust Postgres under scale-out, at the cost of lower per-instance
   query concurrency. Persistent servers can raise the value through configuration.
 - **Unchanged:** connection string handling, Prisma client behaviour, and schema.
+
+## S1 — Scope `cookie-session` to `/auth`
+
+- **Behaviour:** `cookie-session` now runs only for `/auth` and its subpaths.
+  Public and authenticated non-auth responses no longer parse or emit the OAuth
+  state cookie.
+- **Trade-off:** `req.session` is unavailable outside `/auth`. Nothing currently
+  reads it there; the access-token and refresh-cookie flow is unchanged.
+- **Unchanged:** OAuth cookie options, login flow, route sets, and response bodies.
