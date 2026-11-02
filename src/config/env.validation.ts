@@ -43,6 +43,8 @@ export const envValidationSchema = Joi.object({
 
   REFRESH_GRACE_SECONDS: Joi.number().integer().min(0).max(60).default(10),
   AUTHZ_CACHE_TTL_SECONDS: Joi.number().integer().min(0).max(300).default(30),
+  ENABLE_APP_COMPRESSION: Joi.boolean().default(true),
+  GUIDEBOOK_CACHE_TTL_SECONDS: Joi.number().integer().min(0).max(3600).default(60),
   AUDIT_RETENTION_DAYS: Joi.number().integer().min(1).max(3650).default(365),
 
   // Required by the Vercel Cron cleanup endpoint in production.

@@ -84,7 +84,9 @@ export async function createNestApp(): Promise<INestApplication> {
 
   // Security middleware
   app.use(helmet());
-  app.use(compression());
+  if (config.get<boolean>('ENABLE_APP_COMPRESSION', true)) {
+    app.use(compression());
+  }
 
   // CORS — only allow configured origins
   if (corsOrigins.length > 0) {
