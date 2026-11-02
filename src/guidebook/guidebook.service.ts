@@ -23,6 +23,7 @@ import {
   TopicStatus,
 } from './guidebook.types.js';
 import { R2StorageService } from '../storage/r2-storage.service.js';
+import { GuidebookCacheService, type CachedJson } from './guidebook-cache.service.js';
 
 export const MAX_MARKDOWN_BYTES = 512 * 1024;
 export const MARKDOWN_CONTENT_TYPE = 'text/markdown; charset=utf-8';
@@ -53,43 +54,50 @@ export class GuidebookService {
   constructor(
     private readonly repository: GuidebookRepository,
     private readonly storage: R2StorageService,
+    private readonly cache: GuidebookCacheService,
   ) {}
 
-  list(limit: number, cursor?: string) {
-    return this.repository.findAll(limit, cursor);
+  list(limit: number, cursor?: string): Promise<CachedJson<Awaited<ReturnType<GuidebookRepository['findAll']>>>> {
+    return this.cache.getList(`${limit}:${cursor ?? ''}`, () => this.repository.findAll(limit, cursor));
   }
 
-  async getDetail(id: string): Promise<GuidebookDetail> {
-    const detail = await this.repository.findDetailById(id);
-    if (!detail) {
-      throw new NotFoundException(`Guidebook ${id} not found`);
-    }
-    return detail;
+  async getDetail(id: string): Promise<CachedJson<GuidebookDetail>> {
+    return this.cache.getDetail(id, async () => {
+      const detail = await this.repository.findDetailById(id);
+      if (!detail) {
+        throw new NotFoundException(`Guidebook ${id} not found`);
+      }
+      return detail;
+    });
   }
 
   async getTopicContent(roadmapId: string, topicId: string): Promise<TopicContent> {
-    const topic = await this.repository.findTopicContent(roadmapId, topicId);
-    if (!topic) {
-      throw new NotFoundException(`Topic ${topicId} not found`);
-    }
-    if (topic.document) {
+    return this.cache.getContent(`${roadmapId}:${topicId}`, async () => {
+      const topic = await this.repository.findTopicContent(roadmapId, topicId);
+      if (!topic) {
+        throw new NotFoundException(`Topic ${topicId} not found`);
+      }
+      if (topic.document) {
+        return {
+          content: topic.document.body,
+          contentType: topic.document.contentType,
+          sizeBytes: topic.document.sizeBytes,
+          etag: topic.document.contentHash
+            ? `"${topic.document.contentHash}"`
+            : `"${createHash('sha1').update(topic.document.body).digest('hex')}"`,
+        };
+      }
+      if (!topic.objectKey) {
+        throw new NotFoundException('This topic has no document yet');
+      }
+      const object = await this.storage.getObject(topic.objectKey);
       return {
-        content: topic.document.body,
-        contentType: topic.document.contentType,
-        sizeBytes: topic.document.sizeBytes,
-        etag: `"${createHash('sha1').update(topic.document.body).digest('hex')}"`,
+        content: object.body,
+        contentType: MARKDOWN_CONTENT_TYPE,
+        sizeBytes: Buffer.byteLength(object.body, 'utf-8'),
+        etag: `"${createHash('sha1').update(object.body).digest('hex')}"`,
       };
-    }
-    if (!topic.objectKey) {
-      throw new NotFoundException('This topic has no document yet');
-    }
-    const object = await this.storage.getObject(topic.objectKey);
-    return {
-      content: object.body,
-      contentType: MARKDOWN_CONTENT_TYPE,
-      sizeBytes: Buffer.byteLength(object.body, 'utf-8'),
-      etag: `"${createHash('sha1').update(object.body).digest('hex')}"`,
-    };
+    });
   }
 
   getProgress(roadmapId: string, userId: string) {
@@ -106,14 +114,16 @@ export class GuidebookService {
     if (!topic) {
       throw new NotFoundException(`Topic ${topicId} not found`);
     }
-    return this.repository.upsertProgress(userId, topicId, status);
+    const result = await this.repository.upsertProgress(userId, topicId, status);
+    this.cache.invalidateAll();
+    return result;
   }
 
   async createRoadmap(dto: CreateRoadmapDto, userId?: string) {
     const title = this.validateTitle(dto.title);
     const slug = await this.resolveSlug(dto.slug ?? title);
     const position = dto.position ?? (await this.repository.nextRoadmapPosition());
-    return this.repository.createRoadmap({
+    const result = await this.repository.createRoadmap({
       title,
       slug,
       description: dto.description ?? null,
@@ -121,6 +131,8 @@ export class GuidebookService {
       metadata: (dto.metadata ?? null) as RoadmapMetadata | null,
       userId: userId ?? null,
     });
+    this.cache.invalidateAll();
+    return result;
   }
 
   async updateRoadmap(id: string, dto: UpdateRoadmapDto) {
@@ -140,29 +152,34 @@ export class GuidebookService {
     if (dto.metadata !== undefined) {
       data.metadata = (dto.metadata ?? null) as RoadmapMetadata | null;
     }
-    return this.repository.updateRoadmap(id, data);
+    const result = await this.repository.updateRoadmap(id, data);
+    this.cache.invalidateAll();
+    return result;
   }
 
   async deleteRoadmap(id: string) {
     const objectKeys = await this.repository.findTopicObjectKeys(id);
     await this.repository.deleteRoadmap(id);
+    this.cache.invalidateAll();
     for (const key of objectKeys) {
       await this.storage.deleteObject(key);
+      this.cache.invalidateAll();
     }
   }
 
   async createStage(roadmapId: string, dto: CreateStageDto) {
     await this.getDetail(roadmapId);
     const position = dto.position ?? (await this.repository.nextStagePosition(roadmapId));
-    return this.repository.createStage({
+    const result = await this.repository.createStage({
       roadmapId,
       position,
       title: this.validateTitle(dto.title),
       subtitle: dto.subtitle ?? null,
-      byTheEnd: dto.byTheEnd ?? null,
       weekLabel: dto.weekLabel ?? null,
       prerequisiteStage: dto.prerequisiteStage ?? null,
     });
+    this.cache.invalidateAll();
+    return result;
   }
 
   async updateStage(id: string, dto: UpdateStageDto) {
@@ -185,7 +202,9 @@ export class GuidebookService {
     if (dto.prerequisiteStage !== undefined) {
       data.prerequisiteStage = dto.prerequisiteStage;
     }
-    return this.repository.updateStage(id, data);
+    const result = await this.repository.updateStage(id, data);
+    this.cache.invalidateAll();
+    return result;
   }
 
   async deleteStage(id: string) {
@@ -194,7 +213,10 @@ export class GuidebookService {
       throw new NotFoundException(`Stage ${id} not found`);
     }
     await this.repository.clearTopicStage(stage.roadmapId, stage.position);
-    return this.repository.deleteStage(id);
+    this.cache.invalidateAll();
+    const result = await this.repository.deleteStage(id);
+    this.cache.invalidateAll();
+    return result;
   }
 
   async createCheckpoint(stageId: string, dto: CreateCheckpointDto) {
@@ -203,12 +225,14 @@ export class GuidebookService {
       throw new NotFoundException(`Stage ${stageId} not found`);
     }
     const position = dto.position ?? (await this.repository.nextCheckpointPosition(stageId));
-    return this.repository.createCheckpoint({
+    const result = await this.repository.createCheckpoint({
       stageId,
       position,
       task: this.validateTitle(dto.task),
       timeEstimate: dto.timeEstimate ?? null,
     });
+    this.cache.invalidateAll();
+    return result;
   }
 
   async updateCheckpoint(id: string, dto: UpdateCheckpointDto) {
@@ -222,11 +246,15 @@ export class GuidebookService {
     if (dto.position !== undefined) {
       data.position = dto.position;
     }
-    return this.repository.updateCheckpoint(id, data);
+    const result = await this.repository.updateCheckpoint(id, data);
+    this.cache.invalidateAll();
+    return result;
   }
 
-  deleteCheckpoint(id: string) {
-    return this.repository.deleteCheckpoint(id);
+  async deleteCheckpoint(id: string) {
+    const result = await this.repository.deleteCheckpoint(id);
+    this.cache.invalidateAll();
+    return result;
   }
 
   async createTopic(roadmapId: string, dto: CreateTopicDto) {
@@ -234,7 +262,7 @@ export class GuidebookService {
     const title = this.validateTitle(dto.title);
     const position = dto.position ?? (await this.repository.nextTopicPosition(roadmapId));
     const slug = await this.resolveTopicSlug(roadmapId, dto.slug ?? title);
-    return this.repository.createTopic({
+    const result = await this.repository.createTopic({
       roadmapId,
       position,
       title,
@@ -245,6 +273,8 @@ export class GuidebookService {
       estimatedMinutes: dto.estimatedMinutes ?? null,
       metadata: (dto.metadata ?? null) as TopicMetadata | null,
     });
+    this.cache.invalidateAll();
+    return result;
   }
 
   async updateTopic(id: string, dto: UpdateTopicDto) {
@@ -277,7 +307,9 @@ export class GuidebookService {
     if (dto.metadata !== undefined) {
       data.metadata = (dto.metadata ?? null) as TopicMetadata | null;
     }
-    return this.repository.updateTopic(id, data);
+    const result = await this.repository.updateTopic(id, data);
+    this.cache.invalidateAll();
+    return result;
   }
 
   async deleteTopic(id: string) {
@@ -288,7 +320,9 @@ export class GuidebookService {
     const deleted = await this.repository.deleteTopic(id);
     if (topic.objectKey) {
       await this.storage.deleteObject(topic.objectKey);
+      this.cache.invalidateAll();
     }
+    this.cache.invalidateAll();
     return deleted;
   }
 
@@ -310,9 +344,12 @@ export class GuidebookService {
       sizeBytes,
       contentHash: createHash('sha256').update(body).digest('hex'),
     });
+    this.cache.invalidateAll();
     if (topic.objectKey) {
       await this.repository.updateTopic(topicId, { objectKey: null });
+      this.cache.invalidateAll();
       await this.storage.deleteObject(topic.objectKey);
+      this.cache.invalidateAll();
     }
     return { objectKey: null, sizeBytes };
   }
@@ -323,9 +360,12 @@ export class GuidebookService {
       throw new NotFoundException(`Topic ${topicId} not found`);
     }
     await this.repository.deleteTopicDocument(topicId);
+    this.cache.invalidateAll();
     if (topic.objectKey) {
       await this.repository.updateTopic(topicId, { objectKey: null });
+      this.cache.invalidateAll();
       await this.storage.deleteObject(topic.objectKey);
+      this.cache.invalidateAll();
     }
   }
 

@@ -251,6 +251,7 @@ export class GuidebookRepository {
       body: string;
       contentType: string;
       sizeBytes: number;
+      contentHash: string;
     } | null;
   } | null> {
     return this.prisma.client.topic
@@ -261,7 +262,7 @@ export class GuidebookRepository {
           roadmapId: true,
           objectKey: true,
           document: {
-            select: { body: true, contentType: true, sizeBytes: true },
+            select: { body: true, contentType: true, sizeBytes: true, contentHash: true },
           },
         },
       })
@@ -312,6 +313,25 @@ export class GuidebookRepository {
       .then((rows) =>
         rows.map((row) => ({ topicId: row.topicId, status: row.status as TopicStatus })),
       );
+  }
+
+  findAllProgress(
+    userId: string,
+  ): Promise<Array<{ topicId: string; status: TopicStatus; roadmapId: string }>> {
+    return this.prisma.client.topicProgress
+      .findMany({
+        where: { userId },
+        select: {
+          topicId: true,
+          status: true,
+          topic: { select: { roadmapId: true } },
+        },
+      })
+      .then((rows) => rows.map((row) => ({
+        topicId: row.topicId,
+        status: row.status as TopicStatus,
+        roadmapId: row.topic.roadmapId,
+      })));
   }
 
   upsertProgress(

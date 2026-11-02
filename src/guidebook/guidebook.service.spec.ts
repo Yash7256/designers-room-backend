@@ -8,6 +8,7 @@ import { GuidebookRepository } from './guidebook.repository.js';
 import { GuidebookService } from './guidebook.service.js';
 import { GuidebookDetail, MarkdownUpload } from './guidebook.types.js';
 import { R2StorageService } from '../storage/r2-storage.service.js';
+import { GuidebookCacheService } from './guidebook-cache.service.js';
 
 function makeDetail(overrides: Partial<GuidebookDetail> = {}): GuidebookDetail {
   return {
@@ -49,6 +50,7 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
       body: '# Design fundamentals\n',
       contentType: 'text/markdown; charset=utf-8',
       sizeBytes: 25,
+      contentHash: 'stored-content-hash',
     },
   });
   const findTopicRecord = vi
@@ -132,8 +134,13 @@ function createService(detail: GuidebookDetail | null = makeDetail()) {
     deleteObject,
   } as unknown as R2StorageService;
 
+  const cache = new GuidebookCacheService({
+    get: vi.fn().mockReturnValue(60),
+  } as never);
+
   return {
-    service: new GuidebookService(repository, storage),
+    service: new GuidebookService(repository, storage, cache),
+    cache,
     repository: {
       createRoadmap,
       updateRoadmap,
@@ -168,7 +175,7 @@ describe('GuidebookService', () => {
 
     const result = await service.list(20, undefined);
 
-    expect(result).toEqual({ items: [], nextCursor: null });
+    expect(result.value).toEqual({ items: [], nextCursor: null });
   });
 
   it('throws when the guidebook does not exist', async () => {
@@ -184,7 +191,7 @@ describe('GuidebookService', () => {
 
     expect(result.content).toBe('# Design fundamentals\n');
     expect(result.contentType).toBe('text/markdown; charset=utf-8');
-    expect(result.etag).toMatch(/^"[0-9a-f]{40}"$/);
+    expect(result.etag).toBe('"stored-content-hash"');
   });
 
   it('throws when a topic has no document', async () => {
