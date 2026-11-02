@@ -32,14 +32,14 @@ export class AuthService {
           throw new UnauthorizedException('Admin access denied');
         }
       }
-      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      await this.audit.logDeferred({ action: 'LOGIN_SUCCESS', userId: existingByGoogleId.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(existingByGoogleId.id, meta);
     }
 
     const existingByEmail = await this.prisma.client.user.findUnique({ where: { email } });
     if (!existingByEmail) {
       const user = await this.prisma.client.user.create({ data: { email, googleId: identity.googleId, name: identity.name } });
-      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      await this.audit.logDeferred({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(user.id, meta);
     }
 
@@ -52,7 +52,7 @@ export class AuthService {
         }
       }
       const user = await this.prisma.client.user.update({ where: { id: existingByEmail.id }, data: { googleId: identity.googleId } });
-      await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+      await this.audit.logDeferred({ action: 'LOGIN_SUCCESS', userId: user.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
       return this.issueTokens(user.id, meta);
     }
 
@@ -69,7 +69,7 @@ export class AuthService {
       }
     }
 
-    await this.audit.logCritical({ action: 'LOGIN_SUCCESS', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
+    await this.audit.logDeferred({ action: 'LOGIN_SUCCESS', userId: existingByEmail.id, ip: meta?.ipAddress, userAgent: meta?.userAgent, metadata: { provider: 'google' } });
     return this.issueTokens(existingByEmail.id, meta);
   }
 
@@ -77,8 +77,8 @@ export class AuthService {
     if (!raw) throw new UnauthorizedException('Invalid refresh token');
     try {
       const rotated = await this.tokens.rotate(raw, meta);
-      await this.audit.logCritical({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
-      return { access_token: this.jwtService.sign({ sub: rotated.userId, typ: 'access' }), refresh_token: rotated.raw };
+      await this.audit.logDeferred({ action: 'TOKEN_REFRESH', userId: rotated.userId, ip: meta?.ipAddress, userAgent: meta?.userAgent });
+      return { access_token: this.jwtService.sign({ sub: rotated.userId, typ: 'access' }), refresh_token: rotated.raw, userId: rotated.userId };
     } catch (error) {
       if (error instanceof UnauthorizedException && error.message === 'Refresh token reuse detected') await this.audit.logCritical({ action: 'TOKEN_REUSE_DETECTED', ip: meta?.ipAddress, userAgent: meta?.userAgent });
       throw error;

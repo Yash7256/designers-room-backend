@@ -50,3 +50,14 @@ Behaviour trade-offs made during the speed pass.
   on other serverless instances. Same-instance invalidation after logout, token
   reuse, and profile updates is immediate.
 - **Unchanged:** JWT checks, response shapes, database schema, and refresh flow.
+
+## A1 — Defer successful login and refresh audit writes
+
+- **Behaviour:** `LOGIN_SUCCESS` and `TOKEN_REFRESH` audit writes are scheduled
+  in the background, using Vercel's `waitUntil` when available. Security and
+  failure events remain awaited through `logCritical`.
+- **Trade-off:** success logs are durable but no longer block the login or
+  refresh response. A deferred write may complete after the response, while
+  critical security events retain their awaited handling.
+- **Unchanged:** audit payloads, critical-event handling, and authentication
+  decisions.
