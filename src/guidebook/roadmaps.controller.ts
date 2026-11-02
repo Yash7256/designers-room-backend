@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Query, Req, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { createHash } from 'crypto';
 import type { Request, Response } from 'express';
+import { sendCachedJson } from '../common/http/send-cached-json.js';
 import { Public } from '../auth/decorators/public.decorator.js';
 import { PUBLIC_GUIDEBOOK } from '../common/http/cache-control.js';
 import { PaginateRoadmapsDto } from './dto/paginate-roadmaps.dto.js';
@@ -21,10 +21,7 @@ export class RoadmapsController {
   @Get()
   async getAll(@Query() dto: PaginateRoadmapsDto, @Res() res: Response) {
     const result = await this.guidebookService.list(dto.limit ?? 20, dto.cursor);
-    const etag = `"${createHash('sha1').update(JSON.stringify(result)).digest('hex')}"`;
-    res.setHeader('Cache-Control', PUBLIC_GUIDEBOOK);
-    res.setHeader('ETag', etag);
-    return res.json(result);
+    return sendCachedJson(res.req, res, result, PUBLIC_GUIDEBOOK);
   }
 
   @Public()
@@ -35,10 +32,7 @@ export class RoadmapsController {
       return res.status(400).json({ statusCode: 400, message: 'Invalid id format' });
     }
     const roadmap = await this.guidebookService.getDetail(id);
-    const etag = `"${createHash('sha1').update(JSON.stringify(roadmap)).digest('hex')}"`;
-    res.setHeader('Cache-Control', PUBLIC_GUIDEBOOK);
-    res.setHeader('ETag', etag);
-    return res.json(roadmap);
+    return sendCachedJson(res.req, res, roadmap, PUBLIC_GUIDEBOOK);
   }
 
   @Public()

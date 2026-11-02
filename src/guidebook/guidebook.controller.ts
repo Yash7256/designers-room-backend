@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Query, Req, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { createHash } from 'crypto';
 import type { Request, Response } from 'express';
+import { sendCachedJson } from '../common/http/send-cached-json.js';
 import { Public } from '../auth/decorators/public.decorator.js';
 import { PUBLIC_GUIDEBOOK } from '../common/http/cache-control.js';
 import { PaginateRoadmapsDto } from './dto/paginate-roadmaps.dto.js';
@@ -18,10 +18,7 @@ export class GuidebookController {
   @Get()
   async list(@Query() dto: PaginateRoadmapsDto, @Res() res: Response) {
     const result = await this.guidebookService.list(dto.limit ?? 20, dto.cursor);
-    const etag = `"${createHash('sha1').update(JSON.stringify(result)).digest('hex')}"`;
-    res.setHeader('Cache-Control', PUBLIC_GUIDEBOOK);
-    res.setHeader('ETag', etag);
-    return res.json(result);
+    return sendCachedJson(res.req, res, result, PUBLIC_GUIDEBOOK);
   }
 
   @Public()
@@ -29,10 +26,7 @@ export class GuidebookController {
   @Get(':id')
   async getById(@Param('id') id: string, @Res() res: Response) {
     const guidebook = await this.guidebookService.getDetail(id);
-    const etag = `"${createHash('sha1').update(JSON.stringify(guidebook)).digest('hex')}"`;
-    res.setHeader('Cache-Control', PUBLIC_GUIDEBOOK);
-    res.setHeader('ETag', etag);
-    return res.json(guidebook);
+    return sendCachedJson(res.req, res, guidebook, PUBLIC_GUIDEBOOK);
   }
 
   @Public()

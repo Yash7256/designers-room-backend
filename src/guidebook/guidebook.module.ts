@@ -6,10 +6,12 @@ import { GuidebookController } from './guidebook.controller.js';
 import { GuidebookRepository } from './guidebook.repository.js';
 import { GuidebookService } from './guidebook.service.js';
 import { RoadmapsController } from './roadmaps.controller.js';
+import { GuidebookCacheService } from './guidebook-cache.service.js';
 
 @Module({
   imports: [DatabaseModule, StorageModule],
   controllers: [RoadmapsController, GuidebookController, GuidebookAdminController],
-  providers: [GuidebookService, GuidebookRepository],
+  providers: [GuidebookService, GuidebookRepository, GuidebookCacheService],
+  exports: [GuidebookService, GuidebookRepository],
 })
 export class GuidebookModule {}

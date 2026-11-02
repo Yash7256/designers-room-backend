@@ -37,6 +37,11 @@ environment used by the frontend:
   with SPF and DKIM before enabling production traffic. `RESEND_REPLY_TO` is
   optional.
 
+App-level response compression is enabled by default. On Vercel, the owner may
+set `ENABLE_APP_COMPRESSION=false` after confirming that the Vercel edge still
+compresses responses as expected; otherwise leave it enabled. The setting is
+also available for local and persistent-server deployments.
+
 `TRUST_PROXY` needs no configuration on Vercel: the effective value is never
 below `1` (the Vercel router) whenever the `VERCEL` environment variable is
 set. That hop of trust is required for HTTPS detection (Google OAuth state
@@ -46,6 +51,12 @@ Cloudflare section below).
 
 The Vercel build command runs `npm run prisma:generate && npm run build`, so
 Prisma client generation and a full `nest build` type-check gate every deploy.
+
+Guidebook responses use an in-process cache with a configurable
+`GUIDEBOOK_CACHE_TTL_SECONDS` (default 60 seconds). The standalone import
+script runs outside the API process and cannot invalidate warm function caches;
+the TTL bounds how long imported content may remain stale. Set the TTL to `0`
+to disable this cache when immediate visibility is required.
 
 Run Prisma migrations from CI or a trusted machine with a direct database URL:
 

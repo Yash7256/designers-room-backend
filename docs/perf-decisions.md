@@ -61,3 +61,13 @@ Behaviour trade-offs made during the speed pass.
   critical security events retain their awaited handling.
 - **Unchanged:** audit payloads, critical-event handling, and authentication
   decisions.
+
+## G1 — Cache guidebook responses in-process
+
+- **Behaviour:** guidebook list, detail, and topic-content reads reuse warm
+  in-process entries for `GUIDEBOOK_CACHE_TTL_SECONDS` (default 60 seconds),
+  with cached JSON and ETags generated once per entry.
+- **Trade-off:** content imported or changed outside the API process may remain
+  stale until the TTL expires; successful API mutations invalidate the local
+  cache immediately.
+- **Unchanged:** route sets, response shapes, and legacy R2 fallback behaviour.
