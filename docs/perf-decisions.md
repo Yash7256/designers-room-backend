@@ -71,3 +71,41 @@ Behaviour trade-offs made during the speed pass.
   stale until the TTL expires; successful API mutations invalidate the local
   cache immediately.
 - **Unchanged:** route sets, response shapes, and legacy R2 fallback behaviour.
+
+## S3 — Reuse stored content hashes
+
+- **Behaviour:** database-backed topic ETags reuse `TopicDocument.contentHash`;
+  legacy R2 content retains its body-hash fallback.
+- **Trade-off:** an incorrect stored hash would produce an incorrect validator,
+  so writes and imports must continue updating the hash with the document.
+- **Unchanged:** content bodies, content types, and R2 fallback behaviour.
+
+## A2 — Consolidate refresh rotation writes
+
+- **Behaviour:** token consumption and `replacedBy` assignment occur in one
+  update, removing one refresh-rotation database round trip.
+- **Trade-off:** the successor ID must be generated before the consume update;
+  grace, expiry, reuse detection, and family revocation remain unchanged.
+
+## A3 — Return the refreshed user
+
+- **Behaviour:** refresh responses now include a compact user profile alongside
+  the existing access token.
+- **Trade-off:** refresh performs a cache-backed profile lookup and exposes the
+  same profile fields already returned by authenticated user endpoints.
+- **Unchanged:** access-token format, refresh-token rotation, and cookie behavior.
+
+## S4 — Switchable application compression
+
+- **Behaviour:** app-level compression remains enabled by default but can be
+  disabled with `ENABLE_APP_COMPRESSION`.
+- **Trade-off:** disabling it may reduce duplicate compression on Vercel, but
+  must only be done after confirming edge compression still applies.
+
+## D1 — Consolidated dashboard read
+
+- **Behaviour:** `/me/dashboard` combines the cached profile and guidebook list
+  with one grouped progress query.
+- **Trade-off:** the dashboard remains `no-store` and its progress data is
+  current per request, while guidebook data follows its existing cache TTL.
+- **Unchanged:** existing `/me/*` routes and frontend code.
