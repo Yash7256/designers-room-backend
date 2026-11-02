@@ -29,6 +29,13 @@ environment used by the frontend:
 - `WEB_APP_URL` — the deployed frontend URL.
 - `CORS_ORIGINS` — the deployed frontend URL, without a trailing slash.
 - `NODE_ENV=production`
+- `DB_POOL_MAX` — PostgreSQL pool size per process; use `3` on serverless and
+  approximately `10` on a persistent server.
+- `AUTHZ_CACHE_TTL_SECONDS` — authenticated user profile cache TTL in seconds;
+  defaults to `30`, and `0` disables it.
+- `GUIDEBOOK_CACHE_TTL_SECONDS` — in-process guidebook cache TTL in seconds;
+  defaults to `60`, and `0` disables it.
+- `ENABLE_APP_COMPRESSION` — app-level response compression; defaults to `true`.
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` —
   optional Cloudflare R2 credentials for legacy guidebook documents. New
   documents are stored in PostgreSQL (see below).

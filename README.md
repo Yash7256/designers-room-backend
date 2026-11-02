@@ -50,6 +50,8 @@ npm run start:dev
 | `DATABASE_URL`     | ✅       | PostgreSQL connection string (host = `postgres` in Docker) |
 | `DB_POOL_MAX`      | –        | PostgreSQL pool size per process (default `3`; ~`10` on a persistent server) |
 | `GUIDEBOOK_CACHE_TTL_SECONDS` | – | In-process guidebook cache TTL in seconds (default `60`; `0` disables) |
+| `AUTHZ_CACHE_TTL_SECONDS` | – | Authenticated user profile cache TTL in seconds (default `30`; `0` disables) |
+| `ENABLE_APP_COMPRESSION` | – | App-level response compression (default `true`) |
 | `POSTGRES_PASSWORD`| ✅       | Password for the `postgres` user (used by docker compose) |
 | `JWT_SECRET`       | ✅       | ≥ 32-char random secret for signing JWTs                |
 | `REFRESH_TOKEN_SECRET` | ✅    | Secret used for OAuth state cookies                     |
