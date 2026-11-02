@@ -9,6 +9,7 @@ import cookieSession from 'cookie-session';
 import helmetImport, { type HelmetOptions } from 'helmet';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter.js';
+import { defaultCacheControl } from './common/http/cache-control.js';
 import { serverTimingMiddleware } from './common/middleware/server-timing.middleware.js';
 
 type HelmetFactory = (options?: Readonly<HelmetOptions>) => RequestHandler;
@@ -21,6 +22,7 @@ export async function createNestApp(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule, { abortOnError: false });
 
   app.use(serverTimingMiddleware);
+  app.use(defaultCacheControl);
 
   const config = app.get(ConfigService);
   const nodeEnv = config.get<string>('NODE_ENV', 'development');
