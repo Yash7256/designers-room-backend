@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { envValidationSchema } from './config/env.validation.js';
+import { AuthzCacheModule } from './auth/authz-cache.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
@@ -32,6 +33,7 @@ void configModule.catch(() => undefined);
     }),
     ...(process.env['VERCEL'] ? [] : [ScheduleModule.forRoot()]),
     DatabaseModule,
+    AuthzCacheModule,
     AuthModule,
     UsersModule,
     HealthModule,

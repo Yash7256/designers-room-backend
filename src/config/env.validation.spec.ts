@@ -27,6 +27,22 @@ describe('envValidationSchema', () => {
     expect(error).toBeDefined();
   });
 
+  it('defaults AUTHZ_CACHE_TTL_SECONDS to 30', () => {
+    const { value, error } = envValidationSchema.validate(base);
+
+    expect(error).toBeUndefined();
+    expect(value.AUTHZ_CACHE_TTL_SECONDS).toBe(30);
+  });
+
+  it('rejects AUTHZ_CACHE_TTL_SECONDS above 300', () => {
+    const { error } = envValidationSchema.validate({
+      ...base,
+      AUTHZ_CACHE_TTL_SECONDS: 301,
+    });
+
+    expect(error).toBeDefined();
+  });
+
   it('defaults COOKIE_SAMESITE to none in production', () => {
     const { value, error } = envValidationSchema.validate({ ...base, NODE_ENV: 'production' });
 

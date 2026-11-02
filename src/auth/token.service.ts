@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { Request } from 'express';
 import { PrismaService } from '../database/prisma.service.js';
+import { AuthzCacheService } from './authz-cache.service.js';
 
 const DAY = 86_400_000;
 export const REFRESH_COOKIE = '__Host-refresh';
@@ -43,7 +44,7 @@ export function sha256(value: string): string {
 
 @Injectable()
 export class TokenService {
-  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) {}
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private readonly authzCache: AuthzCacheService) {}
 
   private getGraceSeconds(): number {
     const value = this.config.get<number>('REFRESH_GRACE_SECONDS');
@@ -102,6 +103,7 @@ export class TokenService {
     if (outcome.reuse === 'grace') throw new UnauthorizedException('Invalid refresh token');
     if (outcome.reuse === true) {
       await this.prisma.client.user.update({ where: { id: outcome.userId }, data: { sessionsRevokedAt: new Date() } });
+      this.authzCache.invalidate(outcome.userId);
       throw new UnauthorizedException('Refresh token reuse detected');
     }
     return outcome;
@@ -115,6 +117,7 @@ export class TokenService {
         await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, usedAt: null }, data: { usedAt: now, revokedAt: now } });
         await this.prisma.client.refreshToken.updateMany({ where: { familyId: token.familyId, revokedAt: null }, data: { revokedAt: now } });
         await this.prisma.client.user.update({ where: { id: token.userId }, data: { sessionsRevokedAt: now } });
+        this.authzCache.invalidate(token.userId);
       }
     }
   }
@@ -125,6 +128,7 @@ export class TokenService {
     await this.prisma.client.refreshToken.updateMany({ where: { ...where, usedAt: null }, data: { usedAt: now, revokedAt: now } });
     await this.prisma.client.refreshToken.updateMany({ where: { ...where, revokedAt: null }, data: { revokedAt: now } });
     await this.prisma.client.user.update({ where: { id: userId }, data: { sessionsRevokedAt: now } });
+    this.authzCache.invalidate(userId);
   }
 
   metadata(req: Request) {

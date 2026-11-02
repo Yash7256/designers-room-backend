@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthzCacheService } from '../auth/authz-cache.service.js';
 import { UsersRepository } from './users.repository.js';
 import { UsersService } from './users.service.js';
 
@@ -7,6 +8,11 @@ const mockRepo = {
   updateProfile: vi.fn(),
   findByEmail: vi.fn(),
   create: vi.fn(),
+};
+
+const mockAuthzCache = {
+  invalidate: vi.fn(),
+  clear: vi.fn(),
 };
 
 const sampleUser = {
@@ -21,7 +27,10 @@ describe('UsersService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new UsersService(mockRepo as unknown as UsersRepository);
+    service = new UsersService(
+      mockRepo as unknown as UsersRepository,
+      mockAuthzCache as unknown as AuthzCacheService,
+    );
   });
 
   describe('getProfile', () => {
@@ -48,6 +57,7 @@ describe('UsersService', () => {
       expect(mockRepo.updateProfile).toHaveBeenCalledWith(sampleUser.id, {
         name: 'Jane Updated',
       });
+      expect(mockAuthzCache.invalidate).toHaveBeenCalledWith(sampleUser.id);
     });
   });
 });

@@ -42,6 +42,7 @@ export const envValidationSchema = Joi.object({
     .when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.optional() }),
 
   REFRESH_GRACE_SECONDS: Joi.number().integer().min(0).max(60).default(10),
+  AUTHZ_CACHE_TTL_SECONDS: Joi.number().integer().min(0).max(300).default(30),
   AUDIT_RETENTION_DAYS: Joi.number().integer().min(1).max(3650).default(365),
 
   // Required by the Vercel Cron cleanup endpoint in production.

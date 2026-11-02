@@ -40,3 +40,13 @@ Behaviour trade-offs made during the speed pass.
 - **Trade-off:** `req.session` is unavailable outside `/auth`. Nothing currently
   reads it there; the access-token and refresh-cookie flow is unchanged.
 - **Unchanged:** OAuth cookie options, login flow, route sets, and response bodies.
+
+## S2 — Cache the per-request user lookup
+
+- **Behaviour:** authenticated requests reuse an in-memory user profile for
+  `AUTHZ_CACHE_TTL_SECONDS` (default `30`, max `300`, `0` disables). The JWT
+  revocation comparison still runs on every request.
+- **Trade-off:** a revoked session or role change can take up to the TTL to apply
+  on other serverless instances. Same-instance invalidation after logout, token
+  reuse, and profile updates is immediate.
+- **Unchanged:** JWT checks, response shapes, database schema, and refresh flow.

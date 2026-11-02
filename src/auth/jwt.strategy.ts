@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UsersRepository } from '../users/users.repository.js';
+import { AuthzCacheService } from './authz-cache.service.js';
 
 interface JwtPayload {
   sub: string;
@@ -15,7 +15,7 @@ interface JwtPayload {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     config: ConfigService,
-    private readonly usersRepository: UsersRepository,
+    private readonly authzCache: AuthzCacheService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -31,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (typeof payload.sub !== 'string' || payload.sub.length === 0 || payload.typ !== 'access' || payload.purpose) {
       throw new UnauthorizedException('Invalid token');
     }
-    const user = await this.usersRepository.findById(payload.sub);
+    const user = await this.authzCache.get(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
@@ -43,6 +43,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Token revoked');
       }
     }
-    return { userId: user.id, role: user.role };
+    return { userId: user.id, role: user.role, profile: user };
   }
 }
