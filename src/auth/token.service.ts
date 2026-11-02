@@ -63,6 +63,7 @@ export class TokenService {
   }
 
   async rotate(raw: string, meta?: { userAgent?: string; ipAddress?: string }) {
+    const nextId = randomUUID();
     const hash = sha256(raw);
     const outcome = await this.prisma.client.$transaction(async (tx) => {
       const token = await tx.refreshToken.findUnique({ where: { tokenHash: hash } });
@@ -79,7 +80,7 @@ export class TokenService {
       }
       if (token.expiresAt <= now) throw new UnauthorizedException('Refresh token expired');
       if (token.absoluteExpiry <= now) throw new UnauthorizedException('Session expired, please log in again');
-      const consumed = await tx.refreshToken.updateMany({ where: { id: token.id, usedAt: null, revokedAt: null }, data: { usedAt: now, lastUsedAt: now } });
+      const consumed = await tx.refreshToken.updateMany({ where: { id: token.id, usedAt: null, revokedAt: null }, data: { usedAt: now, lastUsedAt: now, replacedBy: nextId } });
       if (consumed.count !== 1) {
         const graceSeconds = this.getGraceSeconds();
         if (graceSeconds > 0) {
@@ -92,12 +93,11 @@ export class TokenService {
       const nextRaw = randomBytes(48).toString('base64url');
       const createdAt = now;
       const next = await tx.refreshToken.create({ data: {
-        userId: token.userId, familyId: token.familyId, familyCreatedAt: token.familyCreatedAt,
+        id: nextId, userId: token.userId, familyId: token.familyId, familyCreatedAt: token.familyCreatedAt,
         absoluteExpiry: token.absoluteExpiry, tokenHash: sha256(nextRaw), createdAt,
         expiresAt: new Date(createdAt.getTime() + 30 * DAY), userAgent: meta?.userAgent,
         ipAddress: meta?.ipAddress,
       } });
-      await tx.refreshToken.update({ where: { id: token.id }, data: { replacedBy: next.id } });
       return { reuse: false as const, userId: token.userId, raw: nextRaw, token: next };
     });
     if (outcome.reuse === 'grace') throw new UnauthorizedException('Invalid refresh token');

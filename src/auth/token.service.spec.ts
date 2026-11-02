@@ -129,3 +129,74 @@ describe('TokenService authz cache invalidation', () => {
     expect(cache.invalidate).toHaveBeenCalledWith(userId);
   });
 });
+
+describe('TokenService refresh rotation', () => {
+  const userId = 'cuser000000000000000001';
+
+  function createRotationService(graceSeconds = 10) {
+    const findUnique = vi.fn();
+    const consume = vi.fn().mockResolvedValue({ count: 1 });
+    const create = vi.fn().mockImplementation(async ({ data }: { data: { id: string } }) => data);
+    const userUpdate = vi.fn().mockResolvedValue({});
+    const tx = {
+      refreshToken: { findUnique, updateMany: consume, create },
+    };
+    const client = {
+      refreshToken: { findUnique: vi.fn(), updateMany: vi.fn(), create: vi.fn() },
+      user: { update: userUpdate },
+      $transaction: vi.fn().mockImplementation(
+        async (callback: (transaction: typeof tx) => Promise<unknown>) => callback(tx),
+      ),
+    };
+    const cache = { invalidate: vi.fn() };
+    const config = {
+      get: vi.fn().mockReturnValue(graceSeconds),
+    } as unknown as ConfigService;
+    const service = new TokenService(
+      { client } as unknown as PrismaService,
+      config,
+      cache as unknown as AuthzCacheService,
+    );
+    return { client, consume, create, findUnique, service, tx, userUpdate };
+  }
+
+  it('consumes and creates the next token in exactly three rotation queries', async () => {
+    const { client, consume, create, findUnique, service } = createRotationService();
+    const expiresAt = new Date(Date.now() + 60_000);
+    findUnique.mockResolvedValue({
+      id: 'current-token',
+      userId,
+      familyId: 'family',
+      familyCreatedAt: new Date(),
+      expiresAt,
+      absoluteExpiry: expiresAt,
+      usedAt: null,
+      revokedAt: null,
+    });
+
+    const result = await service.rotate('raw-token');
+
+    expect(result.reuse).toBe(false);
+    expect(findUnique).toHaveBeenCalledOnce();
+    expect(consume).toHaveBeenCalledOnce();
+    expect(create).toHaveBeenCalledOnce();
+    expect(client.refreshToken.updateMany).not.toHaveBeenCalled();
+    expect(client.refreshToken.create).not.toHaveBeenCalled();
+    expect(consume.mock.calls[0][0].data.replacedBy).toBe(create.mock.calls[0][0].data.id);
+  });
+
+  it('keeps a reused token inside the grace window unchanged', async () => {
+    const { consume, create, findUnique, service, userUpdate } = createRotationService(10);
+    findUnique.mockResolvedValue({
+      usedAt: new Date(Date.now() - 1_000),
+      revokedAt: null,
+      familyId: 'family',
+      userId,
+    });
+
+    await expect(service.rotate('raw-token')).rejects.toThrow('Invalid refresh token');
+    expect(consume).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+    expect(userUpdate).not.toHaveBeenCalled();
+  });
+});
