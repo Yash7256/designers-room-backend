@@ -15,6 +15,7 @@ import { GuidebookModule } from './guidebook/guidebook.module.js';
 import { EmailModule } from './email/email.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 
 const configModule = ConfigModule.forRoot({
   isGlobal: true,
@@ -39,6 +40,7 @@ void configModule.catch(() => undefined);
     HealthModule,
     WaitlistModule,
     GuidebookModule,
+    DashboardModule,
     EmailModule,
     CalendarModule,
     ChallengesModule,
