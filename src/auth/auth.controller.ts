@@ -1,9 +1,10 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service.js';
+import { AuthzCacheService } from './authz-cache.service.js';
 import { Public } from './decorators/public.decorator.js';
 import { refreshCookieName, refreshCookieOptions } from './token.service.js';
 import type { GoogleIdentity } from './google.strategy.js';
@@ -16,7 +17,10 @@ function readCookie(req: Request, name: string): string | undefined {
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly authzCache: AuthzCacheService,
+  ) {}
 
   @Get('google')
   @Public()
@@ -39,7 +43,19 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.refresh(readCookie(req, this.cookieName()), this.authService.metadata(req));
     this.setRefresh(res, result.refresh_token);
-    return { access_token: result.access_token };
+    const profile = await this.authzCache.get(result.userId);
+    if (!profile) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+    return {
+      access_token: result.access_token,
+      user: {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        role: profile.role,
+      },
+    };
   }
 
   @Post('logout')
