@@ -67,7 +67,7 @@ export class ChallengesService {
     const c = await this.prisma.client.challenge.findUnique({ where: { id } });
     if (!c) throw new NotFoundException('Challenge not found');
     // Never expose answerKey
-    const { answerKey, ...rest } = c as any;
+    const { answerKey: _answerKey, ...rest } = c as any;
     return rest;
   }
 }

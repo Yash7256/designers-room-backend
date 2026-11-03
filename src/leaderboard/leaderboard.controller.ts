@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator.js';
 import { LeaderboardService } from './leaderboard.service.js';
 

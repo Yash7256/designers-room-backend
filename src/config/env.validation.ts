@@ -15,6 +15,7 @@ export const envValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().min(32).required(),
   OAUTH_STATE_SECRET: Joi.string().min(32).when('REFRESH_TOKEN_SECRET', {
     is: Joi.exist(),
+    // oxlint-disable-next-line unicorn/no-thenable -- Joi conditional schema, not a promise
     then: Joi.optional(),
     otherwise: Joi.required(),
   }),
@@ -39,6 +40,7 @@ export const envValidationSchema = Joi.object({
   // Google account that receives ADMIN role on first successful OAuth login.
   ADMIN_EMAIL: Joi.string()
     .email({ tlds: { allow: false } })
+    // oxlint-disable-next-line unicorn/no-thenable -- Joi conditional schema, not a promise
     .when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.optional() }),
 
   REFRESH_GRACE_SECONDS: Joi.number().integer().min(0).max(60).default(10),
@@ -48,6 +50,7 @@ export const envValidationSchema = Joi.object({
   AUDIT_RETENTION_DAYS: Joi.number().integer().min(1).max(3650).default(365),
 
   // Required by the Vercel Cron cleanup endpoint in production.
+  // oxlint-disable-next-line unicorn/no-thenable -- Joi conditional schema, not a promise
   CRON_SECRET: Joi.string().min(32).when('NODE_ENV', { is: 'production', then: Joi.required() }),
 
   // Cloudflare R2 object storage. All four variables are optional so the app
